@@ -1,0 +1,16 @@
+[workspace]
+members = ["crates/hopper-core", "apps/desktop"]
+default-members = ["crates/hopper-core"]
+resolver = "2"
+
+[workspace.package]
+edition = "2024"
+version = "0.1.0"
+license = "MIT"
+
+[profile.release]
+lto = "thin"
+strip = true
+
+[profile.dev]
+debug = 0

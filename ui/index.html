@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="color-scheme" content="light"><title>Hopper</title><link rel="stylesheet" href="styles.css"></head>
+<body>
+  <aside class="sidebar">
+    <a class="brand" href="#" aria-label="Hopper home"><span class="brand-mark">h<span>•</span></span>hopper<span class="brand-dot">.</span></a>
+    <div class="eyebrow">YOUR SPACE</div>
+    <nav id="navigation" aria-label="Library navigation">
+      <button data-view="all" class="nav-item active"><span>▤</span> Your hopper <b id="library-count">0</b></button>
+      <button data-view="continue" class="nav-item"><span>◷</span> Continue listening</button>
+      <button data-view="audiobook" class="nav-item"><span>▥</span> Audiobooks</button>
+      <button data-view="audio" class="nav-item"><span>♫</span> Audio</button>
+      <button data-view="video" class="nav-item"><span>▷</span> Video</button>
+      <button data-view="folders" class="nav-item"><span>▱</span> Folders</button>
+    </nav>
+    <div class="side-divider"></div>
+    <div class="eyebrow">CONNECTED TO YOU</div>
+    <button id="devices-nav" class="nav-item"><span>▣</span> Your devices <b id="device-count">1</b></button>
+    <div id="device-summary" class="device-summary"></div>
+    <button id="pair-side" class="pair-link">＋ Pair a device</button>
+    <div class="sidebar-bottom"><span class="live-dot"></span><div><strong id="device-name">This device</strong><small>Your library lives with you.</small></div></div>
+  </aside>
+  <main>
+    <header class="topbar"><div class="breadcrumb">YOUR LIBRARY <span>/</span> <strong id="crumb">All media</strong></div><div class="top-actions"><button id="refresh" class="icon-button" title="Refresh paired libraries" aria-label="Refresh paired libraries">↻</button><span class="avatar">H</span></div></header>
+    <section class="intro"><div><div class="eyebrow accent">GOOD THINGS, LINED UP.</div><h1 id="view-title">In the hopper<span>.</span></h1><p id="view-description">A home for everything you want to hear. And see.</p></div><button id="add" class="primary">＋ Put something in</button></section>
+    <section id="continue-card" class="continue-card" hidden></section>
+    <section class="library-section">
+      <div class="library-toolbar"><div class="section-label" id="section-label">Your collection <span>0 items</span></div><label class="search"><span>⌕</span><input id="search" type="search" placeholder="Find something good…" aria-label="Search your media"></label><button id="play-all" class="secondary">▶ Play all</button></div>
+      <div id="folder-list" class="folders" hidden></div>
+      <div id="collection"></div>
+    </section>
+    <footer class="library-footer"><span>Made for your own collection.</span><span id="connection-status">LOCAL FIRST · YOURS ALWAYS</span></footer>
+  </main>
+  <aside class="queue-panel"><div class="queue-heading"><h2>Up next<span id="queue-count">0</span></h2><button id="clear-queue" class="text-button">Clear</button></div><p class="queue-subtitle">Settle in. We’ll keep things moving.</p><div id="queue"></div><div class="queue-tip"><span>↗</span><p>Your queue stays on this device.<br>Your place follows you.</p></div></aside>
+  <section class="player" aria-label="Media player">
+    <div class="now-playing"><div id="player-art" class="art tone-0">♪</div><div class="now-text"><strong id="player-title">Your next good listen</strong><small id="player-subtitle">Pick something from your hopper</small></div><button id="chapters" class="icon-button" aria-label="Show chapters" title="Chapters">☷</button></div>
+    <div class="playback"><div class="transport"><button id="previous" class="icon-button" aria-label="Previous item">❮</button><button id="rewind" class="icon-button skip" aria-label="Back 15 seconds">↶<small>15</small></button><button id="toggle-play" class="play-button" aria-label="Play">▶</button><button id="forward" class="icon-button skip" aria-label="Forward 30 seconds">↷<small>30</small></button><button id="next" class="icon-button" aria-label="Next item">❯</button></div><div class="timeline"><span id="elapsed">0:00</span><input id="seek" type="range" min="0" max="1" step="0.1" value="0" aria-label="Playback position"><span id="duration">0:00</span></div></div>
+    <div class="player-options"><select id="rate" aria-label="Playback speed"><option value="0.75">0.75×</option><option value="1" selected>1×</option><option value="1.25">1.25×</option><option value="1.5">1.5×</option><option value="1.75">1.75×</option><option value="2">2×</option></select><button id="show-video" class="icon-button" title="Show video" aria-label="Show video" hidden>▣</button><span id="playback-status">READY WHEN YOU ARE</span></div>
+  </section>
+  <div id="video-container" hidden><button id="close-video" class="icon-button" aria-label="Close video">×</button><video id="media" playsinline preload="metadata"></video></div>
+  <dialog id="dialog"><div class="dialog-heading"><h2 id="dialog-title"></h2><button id="dialog-close" class="icon-button" aria-label="Close dialog">×</button></div><div id="dialog-body"></div></dialog>
+  <div id="toast" role="status" hidden></div><div id="drop-overlay" hidden><div>Put it in the hopper<span>Drop audio, video, or an audiobook here.</span></div></div>
+  <input type="file" id="file-input" multiple hidden accept="audio/*,video/*,.m4b,.flac,.opus,.mkv"><input type="file" id="folder-input" webkitdirectory multiple hidden>
+  <script type="module" src="app.js"></script>
+</body></html>

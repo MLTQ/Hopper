@@ -1,0 +1,37 @@
+name: Build and test
+on: [push, pull_request, workflow_dispatch]
+jobs:
+  desktop:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [macos-latest, ubuntu-24.04, windows-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+      - if: runner.os == 'Linux'
+        run: sudo apt-get update && sudo apt-get install -y libwebkit2gtk-4.1-dev build-essential libayatana-appindicator3-dev librsvg2-dev patchelf
+      - run: cargo test -p hopper-core --locked
+      - run: cargo build -p hopper-desktop --locked
+      - uses: actions/upload-artifact@v4
+        with:
+          name: hopper-${{ runner.os }}-development
+          path: |
+            target/debug/hopper-desktop
+            target/debug/hopper-desktop.exe
+            target/debug/hopper-node
+            target/debug/hopper-node.exe
+  ios:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: aarch64-apple-ios,aarch64-apple-ios-sim
+      - uses: Swatinem/rust-cache@v2
+      - run: brew install xcodegen
+      - run: cargo fetch --locked
+      - run: bash apps/ios/build-core.sh
+      - run: xcodebuild -project apps/ios/Hopper.xcodeproj -scheme Hopper -sdk iphonesimulator -destination 'generic/platform=iOS Simulator' -derivedDataPath apps/ios/DerivedData CODE_SIGNING_ALLOWED=NO build

@@ -1,0 +1,9 @@
+{
+  "$schema":"https://schema.tauri.app/config/2",
+  "productName":"Hopper",
+  "version":"0.1.0",
+  "identifier":"app.hopper.player",
+  "build":{"frontendDist":"../../ui"},
+  "app":{"windows":[],"security":{"csp":null}},
+  "bundle":{"active":true,"targets":"all","category":"Music","shortDescription":"Your media, ready everywhere.","macOS":{"minimumSystemVersion":"12.0"}}
+}

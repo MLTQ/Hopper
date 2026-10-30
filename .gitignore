@@ -1,0 +1,10 @@
+/target/
+**/.DS_Store
+apps/ios/build/
+apps/ios/DerivedData/
+apps/ios/*.xcodeproj/
+*.xcuserstate
+.hopper/
+node_modules/
+artifacts/
+*.log

@@ -1,0 +1,11 @@
+# model.rs
+
+## Purpose
+Serializable contracts shared by the local API, Iroh protocol, desktop and iOS clients.
+
+## Contracts
+- Media IDs are lowercase BLAKE3 hex; files with identical bytes share an ID.
+- LocalMedia is private persistence data; only Media crosses the network.
+- Progress orders by (Lamport revision, device ID), never furthest playback position.
+- Timestamps, positions, and chapter boundaries use seconds. Queue is local to a device.
+- Source availability is advisory; streaming still handles errors and tries other replicas.
