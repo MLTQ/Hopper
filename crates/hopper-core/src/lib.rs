@@ -2,8 +2,11 @@ mod ffi;
 mod http;
 pub mod import;
 mod media;
+#[cfg(not(target_os = "ios"))]
+mod media_tools;
 pub mod model;
 mod peer;
+pub mod podcast;
 mod store;
 mod wire;
 
@@ -69,6 +72,9 @@ struct Inner {
     refreshing: tokio::sync::Mutex<()>,
     downloads: tokio::sync::Mutex<()>,
     shutdown: tokio_util::sync::CancellationToken,
+    podcast_commands: tokio::sync::Mutex<()>,
+    podcast_downloads: tokio::sync::Mutex<()>,
+    podcast_wake: tokio::sync::Notify,
     _lock: File,
 }
 
@@ -153,9 +159,13 @@ impl Node {
             refreshing: Default::default(),
             downloads: Default::default(),
             shutdown: Default::default(),
+            podcast_commands: Default::default(),
+            podcast_downloads: Default::default(),
+            podcast_wake: Default::default(),
             _lock: lock,
         }));
         node.start_accepting();
+        node.start_podcasts();
         let port = http::serve(node.clone()).await?;
         let hello = Hello {
             port,
@@ -194,11 +204,19 @@ impl Node {
             device: self.0.device.clone(),
             items,
             progress: self.0.store.all("progress")?,
+            podcasts: self.podcast_catalogue()?.for_sharing(),
         })
     }
 
     pub fn library(&self) -> Result<Library> {
         let statuses = self.0.statuses.lock().unwrap().clone();
+        let mut podcasts = self.podcast_catalogue()?.for_sharing();
+        podcasts.hosts.push(podcast::Host {
+            device: self.0.device.clone(),
+            online: true,
+            desktop: podcasts.desktop,
+            agent_available: podcasts.agent_available,
+        });
         let mut items = BTreeMap::<String, LibraryItem>::new();
         for local in self.0.store.all::<LocalMedia>("local")? {
             let online = import::available(&local);
@@ -220,6 +238,21 @@ impl Node {
         let peers: Vec<Peer> = self.0.store.all("peer")?;
         for peer in &peers {
             if let Some(snapshot) = self.0.store.get::<Snapshot>("snapshot", &peer.device.id)? {
+                podcasts.hosts.push(podcast::Host {
+                    device: peer.device.clone(),
+                    online: statuses.get(&peer.device.id).is_some_and(Option::is_none),
+                    desktop: snapshot.podcasts.desktop,
+                    agent_available: snapshot.podcasts.agent_available,
+                });
+                podcasts.shows.extend(
+                    snapshot
+                        .podcasts
+                        .shows
+                        .into_iter()
+                        .filter(|s| s.owner.id == peer.device.id),
+                );
+                podcasts.episodes.extend(snapshot.podcasts.episodes);
+                podcasts.jobs.extend(snapshot.podcasts.jobs);
                 for media in snapshot.items {
                     let source = Source {
                         device_id: peer.device.id.clone(),
@@ -255,6 +288,7 @@ impl Node {
         });
         Ok(Library {
             device: self.0.device.clone(),
+            podcasts,
             items,
             queue: self.0.store.get("queue", "current")?.unwrap_or_default(),
             peers: peers

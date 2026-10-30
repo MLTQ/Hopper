@@ -80,6 +80,8 @@ pub struct Snapshot {
     pub device: Device,
     pub items: Vec<Media>,
     pub progress: Vec<Progress>,
+    #[serde(default)]
+    pub podcasts: crate::podcast::Catalogue,
 }
 
 #[derive(Clone, Debug, Serialize)]
@@ -112,6 +114,7 @@ pub struct Library {
     pub items: Vec<LibraryItem>,
     pub peers: Vec<PeerStatus>,
     pub queue: Queue,
+    pub podcasts: crate::podcast::Catalogue,
 }
 
 #[derive(Clone, Debug, Serialize, Default)]

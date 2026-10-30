@@ -1,5 +1,8 @@
 # HopperClient.swift
 
+Owner podcast commands may prepare a full episode download, so their timeout matches long media
+transfers. PodcastModels extends this client with typed commands and post-command refresh.
+
 ## Purpose
 Own native node startup, authenticated API calls and the observable merged library.
 

@@ -96,7 +96,7 @@ pub fn inspect(path: &Path, filename: &str, folder: &str, managed: bool) -> Resu
 #[cfg(not(target_os = "ios"))]
 fn read_metadata(path: &Path, media: &mut Media) {
     use serde_json::Value;
-    let output = std::process::Command::new("ffprobe")
+    let output = std::process::Command::new(crate::media_tools::executable("ffprobe"))
         .args([
             "-v",
             "quiet",

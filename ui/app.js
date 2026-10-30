@@ -1,9 +1,11 @@
 import { api, escape as esc, time, duration, tone, initials } from './api.js';
 import { Player } from './player.js';
+import { Podcasts } from './podcasts.js';
 
 const $ = id => document.getElementById(id);
 let library = { items: [], peers: [], queue: { items: [] } }, view = 'all', folder = '', query = '', toastTimer;
 const player = new Player(renderQueue, message => toast(message, true));
+const podcasts = new Podcasts({ dialog, toast, load, player });
 const names = { all: ['In the hopper', 'A home for everything you want to hear. And see.', 'All media'], continue: ['Pick up the thread', 'Right where you left off. Wherever you are.', 'Continue listening'], audiobook: ['Another chapter', 'Long stories. A little time for yourself.', 'Audiobooks'], audio: ['Good company', 'The voices, sounds, and songs you keep coming back to.', 'Audio'], video: ['Worth a watch', 'A little something for the bigger picture.', 'Video'], folders: ['Just as you left it', 'Your folders, across the devices you call home.', 'Folders'] };
 
 function toast(message, error = false) { clearTimeout(toastTimer); $('toast').textContent = message; $('toast').classList.toggle('error', error); $('toast').hidden = false; toastTimer = setTimeout(() => { $('toast').hidden = true; }, error ? 10000 : 4500); }
@@ -19,14 +21,17 @@ async function load(sync = false) {
   catch (e) { toast(e.message, true); }
 }
 function render() {
+  podcasts.library = library;
   $('device-name').textContent = library.device?.name || 'This device';
   $('library-count').textContent = library.items.length;
   $('device-count').textContent = library.peers.length + 1;
   $('device-summary').innerHTML = library.peers.slice(0, 4).map(p => `<div><i class="${p.online ? 'live-dot' : 'offline-dot'}"></i><span>${esc(p.name)}</span><small>${p.online ? 'Online' : 'Offline'}</small></div>`).join('') || '<p>Your other devices belong here.</p>';
   $('connection-status').textContent = `${library.peers.filter(p => p.online).length + 1} DEVICE${library.peers.filter(p => p.online).length ? 'S' : ''} ONLINE · YOURS ALWAYS`;
-  const [title, description, crumb] = names[view];
+  const [title, description, crumb] = view === 'podcasts' ? ['Good company', 'Your shows. Your listening ritual.', 'Podcasts'] : names[view];
   $('view-title').innerHTML = `${esc(title)}<span>.</span>`; $('view-description').textContent = description; $('crumb').textContent = crumb;
   document.querySelectorAll('[data-view]').forEach(el => el.classList.toggle('active', el.dataset.view === view));
+  $('play-all').hidden = view === 'podcasts';
+  if (view === 'podcasts') { $('continue-card').hidden = true; podcasts.render(library, query); renderQueue(); return; }
   const resume = library.items.filter(i => i.progress?.position > 0 && !i.progress.completed).sort((a, b) => (b.progress.updated_at || 0) - (a.progress.updated_at || 0))[0];
   $('continue-card').hidden = !resume || view !== 'all' || Boolean(query);
   if (resume) $('continue-card').innerHTML = `${art(resume, 'hero-art')}<div class="continue-copy"><div class="eyebrow">RIGHT WHERE YOU LEFT OFF</div><h2>${esc(resume.title)}</h2><p>${esc(resume.creator || resume.folder || 'Your collection')} <span>·</span> ${time(resume.progress.position)} in</p><progress max="${resume.duration || 1}" value="${resume.progress.position}"></progress></div><button class="round-play" data-play="${resume.id}" aria-label="Resume ${esc(resume.title)}">▶</button>`;
@@ -54,6 +59,7 @@ function dialog(title, body) { $('dialog-title').textContent = title; $('dialog-
 function addDialog() {
   dialog('Put something in the hopper', `<p class="dialog-lead">A file, a folder, a whole afternoon of listening.</p><button id="choose-files" class="import-choice"><span>♫</span><div><strong>Choose media files</strong><small>Copy audio, audiobooks, or video into Hopper</small></div>↗</button><button id="choose-folder" class="import-choice"><span>▱</span><div><strong>Choose a folder</strong><small>Keep its folder structure in your library</small></div>↗</button><details><summary>Or reference a folder on this desktop</summary><p class="hint">Files stay where they are. Keep the folder available while this desktop serves them.</p><form id="import-path"><input name="path" placeholder="Full path to a file or folder" required><button class="primary">Add folder</button></form></details>`);
   $('choose-files').onclick = () => $('file-input').click(); $('choose-folder').onclick = () => $('folder-input').click();
+  const podcastButton = document.createElement('button'); podcastButton.className = 'import-choice'; podcastButton.textContent = '◉ Subscribe to a podcast ↗'; podcastButton.onclick = () => { view = 'podcasts'; render(); podcasts.subscribe(); }; $('dialog-body').prepend(podcastButton);
   $('import-path').onsubmit = async e => { e.preventDefault(); const button = e.target.querySelector('button'); button.disabled = true; button.textContent = 'Reading your collection…'; try { const r = await api('import', { paths: [new FormData(e.target).get('path')] }); imported(r); } catch (e) { toast(e.message, true); } finally { button.disabled = false; button.textContent = 'Add folder'; } };
 }
 function imported(report) { $('dialog').close(); toast(`${report.added} item${report.added === 1 ? '' : 's'} added${report.skipped ? ` · ${report.skipped} other files skipped` : ''}${report.errors.length ? ` · ${report.errors[0]}` : ''}`, report.errors.length > 0); load(); }
@@ -78,6 +84,7 @@ function detail(id) {
 document.addEventListener('click', async e => {
   const target = e.target.closest('button'); if (!target) return;
   const d = target.dataset;
+  try { await podcasts.click(target); } catch (error) { toast(error.message, true); }
   if (d.play) player.play(d.play);
   if (d.enqueue) { player.enqueue(d.enqueue); toast('Added to your queue'); }
   if (d.detail) detail(d.detail);

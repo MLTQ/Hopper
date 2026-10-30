@@ -43,7 +43,7 @@ final class HopperClient: ObservableObject {
     func request<T: Decodable>(_ path: String, method: String = "GET", body: Data? = nil) async throws -> T {
         guard let hello, let url = URL(string: "http://127.0.0.1:\(hello.port)/api/\(path)") else { throw failureError("The library is still starting.") }
         var request = URLRequest(url: url); request.httpMethod = method; request.httpBody = body
-        request.timeoutInterval = path.hasPrefix("keep/") ? 3600 : 90
+        request.timeoutInterval = path.hasPrefix("keep/") || path == "podcasts/command" ? 3700 : 90
         request.setValue("Bearer \(hello.token)", forHTTPHeaderField: "Authorization")
         if body != nil { request.setValue("application/json", forHTTPHeaderField: "Content-Type") }
         let (data, response) = try await URLSession.shared.data(for: request)

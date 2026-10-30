@@ -36,3 +36,28 @@ The checked-in build workflow has not been run on a remote CI service.
 - Power/battery measurements and larger-library/import/download stress cases.
 
 No physical-iPhone background-playback result is claimed by compilation or simulator checks.
+
+## Podcast and agent checks — October 30, 2026
+- Eight Rust tests passed: five unit tests plus paired-library, full podcast render, and agent-mode
+  integration tests. Real FFmpeg rendered generated WAV audio; a fake LLM verified actual audio
+  input and a fixture command verified the external executable protocol. No real model was called.
+- Tested GUID deduplication, remote subscribe/download/cut/unsubscribe, byte-exact original retention,
+  edited duration, chapter JSON/art fields, VTT cues, soundbites, mapped listening progress and
+  paired access to cleaned media. Conflicting/uncertain overlapping classifications preserve content.
+- Built-in mode waits for configuration, sends WAV/model/auth as specified, redacts credential status,
+  drops saved credentials on endpoint change, and rejects invalid ranges without replacing a ready
+  episode. The actual Python MCP bridge rejects traversal/wrong hashes, accepts valid inbox output,
+  and cancellation remains terminal.
+- Clippy with warnings denied, JavaScript syntax checks, and diff whitespace checks passed.
+- macOS Tauri development bundle rebuilt. Rust iPhone/device and simulator libraries rebuilt;
+  native SwiftUI simulator build passed with the podcast tab, show menus and cut preferences.
+- Desktop UI walkthrough against an isolated synthetic feed: subscribe, show settings, audio-agent
+  setup, fade selection, cut submission, ready status, queue, cleaned playback, original access and
+  remapped chapter display. A 35-second source became 30 seconds; a chapter at 10 seconds moved to 5.
+  Evidence: artifacts/podcast-ready.png (local, ignored).
+- Updated native simulator visual walkthrough was blocked by the Mac being locked. Compilation is
+  verified; no new native UI or physical-device execution result is claimed for this feature.
+
+Real ad-recognition precision, long-episode costs, Hermes audio tools and Dot/Muse client integration
+remain unvalidated. Cleaned RSS export and full Podcasting 2.0 compliance remain follow-up work.
+CI now installs FFmpeg/Python for these tests, but no remote CI run has been performed.

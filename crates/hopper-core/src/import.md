@@ -10,3 +10,5 @@ Reference local media without modifying it, hash identity, and extract optional 
 - ffprobe is optional on desktops and never spawned on iOS. No media URL is accepted here.
 - Adding identical bytes replaces the local reference with the most recently imported location.
 - Raw AAC uses audio/aac; MP4 audio containers use audio/mp4.
+
+Desktop FFmpeg tools resolve through media_tools, including standard macOS Homebrew locations.

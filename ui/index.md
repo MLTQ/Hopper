@@ -7,3 +7,4 @@ Desktop library shell: navigation, collection, persistent queue, transport and m
 Element IDs are consumed by app.js/player.js. Media playback uses one persistent video element
 for audio and video; rerendering the collection never replaces it. No inline executable scripts
 or external assets. Controls are labeled and native inputs support keyboard navigation.
+Podcasts is a first-class navigation destination; its show/settings surfaces reuse the shared dialog.

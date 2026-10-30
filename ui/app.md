@@ -10,3 +10,4 @@ Desktop library interaction: filtering, folders, uploads, pairing, source availa
 - Device/library refresh never restarts playback. The player owns its local queue.
 - Empty libraries are real empty states; no fabricated media or simulated online devices.
 - Native file chooser supports recursive folders; dropping folders is not yet recursive.
+- Podcast browsing delegates to podcasts.js and keeps the existing playback/queue instance alive.

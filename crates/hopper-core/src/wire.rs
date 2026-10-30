@@ -10,6 +10,9 @@ const MAX_FRAME: usize = 16 * 1024 * 1024;
 #[derive(Serialize, Deserialize)]
 #[serde(tag = "type", rename_all = "snake_case")]
 pub enum Request {
+    Podcast {
+        command: crate::podcast::Command,
+    },
     Pair {
         secret: String,
         device: Device,
@@ -28,6 +31,9 @@ pub enum Request {
 #[derive(Serialize, Deserialize)]
 #[serde(tag = "type", rename_all = "snake_case")]
 pub enum Response {
+    Podcast {
+        result: crate::podcast::CommandResult,
+    },
     Paired {
         device: Device,
         address: EndpointAddr,

@@ -39,8 +39,21 @@ Media uses separate random grants scoped to an item for native/browser playback.
 requests resolve catalogue IDs and bounded byte ranges, never caller-provided filesystem paths.
 Database, identity and the data directory are private to the local OS user.
 
+## Podcasts and processing
+A show has one desktop owner. Peers forward typed subscribe/settings/download/cut/cancel commands
+only to explicitly paired owners. The owner fetches RSS and enclosure bytes, preserves GUID identity,
+archives source metadata, and serially processes durable jobs. Feed refresh is periodic while running.
+
+Local-only agent configuration chooses actual audio LLM inference, Hermes/custom argv or an MCP
+inbox. Credentials and executable configuration never enter the mesh. Providers return source-bound
+segment decisions; the core validates them, computes a retained timeline, renders a new managed
+file, and maps chapters, supported transcripts, soundbites and progress through the same spans.
+Failed/cancelled jobs cannot replace a ready episode. Original bytes remain available. iOS embeds
+the same catalogue/command core but launches neither agents nor FFmpeg.
+
 ## Scope and validation
-The initial vertical slice is import → pair → browse → stream/cache → queue → resume. Podcast
-subscriptions, AI processing, timeline remapping, full Podcasting 2.0 support, transcript/vector
-search, watched-folder reconciliation and richer codec conversion remain tracked product work.
+The current slice includes RSS subscriptions, pluggable audio processing and timeline remapping.
+Full Podcasting 2.0 support, cleaned RSS publishing, transcript/vector search, watched-folder
+reconciliation and richer codec conversion remain tracked product work. Real inference accuracy
+and third-party client integrations require evaluation separately from deterministic contract tests.
 Cross-platform source/build workflows do not substitute for actual Windows/Linux/device testing.

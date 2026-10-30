@@ -30,6 +30,9 @@ tempfile = "3"
 tokio = { version = "1", features = ["full"] }
 tokio-util = { version = "0.7", features = ["io", "rt"] }
 walkdir = "2"
+roxmltree = "0.20"
+chrono = { version = "0.4", default-features = false, features = ["std"] }
+reqwest = { version = "0.12", default-features = false, features = ["rustls-tls", "json", "stream"] }
 
 [dev-dependencies]
 reqwest = { version = "0.12", default-features = false, features = ["json", "multipart"] }

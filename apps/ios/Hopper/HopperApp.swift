@@ -19,6 +19,8 @@ struct HopperApp: App {
                     .tabItem { Label("Library", systemImage: "square.stack") }
                 QueueView().safeAreaInset(edge: .bottom, spacing: 0) { MiniPlayer { showPlayer = true } }
                     .tabItem { Label("Up next", systemImage: "text.line.first.and.arrowtriangle.forward") }
+                PodcastsView().safeAreaInset(edge: .bottom, spacing: 0) { MiniPlayer { showPlayer = true } }
+                    .tabItem { Label("Podcasts", systemImage: "dot.radiowaves.left.and.right") }
                 DevicesView().safeAreaInset(edge: .bottom, spacing: 0) { MiniPlayer { showPlayer = true } }
                     .tabItem { Label("Devices", systemImage: "desktopcomputer") }
             }

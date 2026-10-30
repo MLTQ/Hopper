@@ -22,6 +22,14 @@ checks are recorded below. Linux/Windows runtime verification remains outstandin
 - Play audio/video on desktop and through AVQueuePlayer on iOS, with per-device queues.
 - Sync playback progress, including intentional rewinds; persist native iOS checkpoints.
 - Extract titles, creators, duration and M4B chapters when desktop ffprobe is available.
+- Subscribe to RSS podcasts on a desktop and browse/control them from paired desktop/iOS apps.
+- Set per-show ad cuts, banter/promos, fades, confidence and automatic preparation of future episodes.
+- Process through a built-in audio LLM connection, Hermes/custom command, or external MCP inbox.
+- Preserve originals and remap chapters, supported transcripts, soundbites and listening position.
+
+Configure **Podcasts → Audio agent** on the processing desktop before starting cuts. Audio processing
+requires FFmpeg and FFprobe. See [audio-agent setup](docs/agents.md) for provider requirements,
+external-agent integration and current limits. No paid model or API key is selected automatically.
 
 Identical file bytes merge into one library item with multiple available sources. Your source
 files are preserved. Folder paths are retained as library metadata. New files in imported folders
@@ -93,9 +101,9 @@ Import recognizes MP3, M4A/M4B, AAC, FLAC, Ogg/Opus, WAV, AIFF, MP4/M4V, MOV, We
 Actual playback depends on the native player/system webview's codec support. Broad format
 conversion, embedded artwork, resumable downloads and automatic folder replication are follow-ups.
 
-The original product plan remains in [the roadmap](docs/roadmap.md): private podcast feeds,
-conservative reversible AI ad removal, retimed chapters/transcripts/artwork, Podcasting 2.0,
-semantic transcript search and automatic preparation of upcoming episodes.
+Remaining product work includes publishing private cleaned RSS feeds, full Podcasting 2.0 support,
+chapter-art display, semantic transcript search, and evaluating real-world ad-detection accuracy.
+See [the roadmap](docs/roadmap.md) and [agent limitations](docs/agents.md).
 
 ```sh
 cargo test -p hopper-core

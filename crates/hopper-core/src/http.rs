@@ -48,6 +48,8 @@ pub(crate) async fn serve(node: Node) -> Result<u16> {
         .route("/queue", post(queue))
         .route("/play/:id", post(play))
         .route("/keep/:id", post(keep))
+        .route("/podcasts/command", post(podcast_command))
+        .route("/podcasts/agent", get(agent_status).post(agent_config))
         .layer(middleware::from_fn_with_state(node.clone(), authenticate));
     let app = Router::new()
         .nest("/api", api)
@@ -97,6 +99,24 @@ pub(crate) async fn serve(node: Node) -> Result<u16> {
                 )
             }),
         )
+        .route(
+            "/agents.js",
+            get(|| async {
+                (
+                    [(header::CONTENT_TYPE, "text/javascript")],
+                    include_str!("../../../ui/agents.js"),
+                )
+            }),
+        )
+        .route(
+            "/podcasts.js",
+            get(|| async {
+                asset(
+                    "text/javascript; charset=utf-8",
+                    include_str!("../../../ui/podcasts.js"),
+                )
+            }),
+        )
         .layer(DefaultBodyLimit::disable())
         .with_state(node);
     tokio::spawn(async move {
@@ -143,6 +163,29 @@ async fn authenticate(State(node): State<Node>, request: Request, next: Next) ->
 
 async fn library(State(node): State<Node>) -> Api<Library> {
     Ok(Json(node.library()?))
+}
+#[derive(Deserialize)]
+struct PodcastInput {
+    owner_id: String,
+    #[serde(flatten)]
+    command: crate::podcast::Command,
+}
+async fn podcast_command(
+    State(node): State<Node>,
+    Json(input): Json<PodcastInput>,
+) -> Api<crate::podcast::CommandResult> {
+    Ok(Json(
+        node.podcast_command(&input.owner_id, input.command).await?,
+    ))
+}
+async fn agent_status(State(node): State<Node>) -> Api<crate::podcast::agent::AgentStatus> {
+    Ok(Json(node.agent_status()?))
+}
+async fn agent_config(
+    State(node): State<Node>,
+    Json(config): Json<crate::podcast::agent::AgentConfig>,
+) -> Api<crate::podcast::agent::AgentStatus> {
+    Ok(Json(node.set_agent_config(config)?))
 }
 async fn refresh(State(node): State<Node>) -> Api<Library> {
     node.refresh().await?;

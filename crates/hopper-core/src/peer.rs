@@ -93,10 +93,10 @@ impl Node {
         self.0.store.remove("peer", id)?;
         self.0.store.remove("snapshot", id)?;
         self.0.statuses.lock().unwrap().remove(id);
-        if let Ok(id) = id.parse::<iroh::EndpointId>() {
-            if let Some(conn) = self.0.connections.lock().await.remove(&id) {
-                conn.close(0u32.into(), b"device removed");
-            }
+        if let Ok(id) = id.parse::<iroh::EndpointId>()
+            && let Some(conn) = self.0.connections.lock().await.remove(&id)
+        {
+            conn.close(0u32.into(), b"device removed");
         }
         Ok(())
     }
@@ -143,9 +143,7 @@ impl Node {
     }
 
     pub async fn refresh(&self) -> Result<()> {
-        let Ok(_guard) = self.0.refreshing.try_lock() else {
-            return Ok(());
-        };
+        let _guard = self.0.refreshing.lock().await;
         let peers = self.0.store.all::<Peer>("peer")?;
         let updates = self.0.store.all::<Progress>("progress")?;
         let mut pending = stream::iter(peers.into_iter().map(|peer| {
@@ -311,6 +309,10 @@ impl Node {
             .await
             .insert(conn.remote_id(), conn.clone());
         match request {
+            Request::Podcast { command } => {
+                let result = self.apply_podcast_command(command).await?;
+                wire::write_json(send, &Response::Podcast { result }).await?;
+            }
             Request::Snapshot { progress } => {
                 self.0.store.merge_progress(&progress)?;
                 wire::write_json(

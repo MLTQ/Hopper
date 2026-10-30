@@ -46,6 +46,27 @@ impl Store {
         )?;
         Ok(())
     }
+    pub fn update<T: DeserializeOwned + Serialize>(
+        &self,
+        kind: &str,
+        key: &str,
+        change: impl FnOnce(Option<T>) -> Result<T>,
+    ) -> Result<T> {
+        let c = self.0.lock().unwrap();
+        let old: Option<String> = c
+            .query_row(
+                "SELECT value FROM records WHERE kind=?1 AND key=?2",
+                params![kind, key],
+                |r| r.get(0),
+            )
+            .optional()?;
+        let value = change(old.map(|s| serde_json::from_str(&s)).transpose()?)?;
+        c.execute(
+            "INSERT OR REPLACE INTO records VALUES(?1,?2,?3)",
+            params![kind, key, serde_json::to_string(&value)?],
+        )?;
+        Ok(value)
+    }
     pub fn progress(
         &self,
         id: &str,
@@ -144,7 +165,7 @@ mod tests {
         let b = Store::open(&dir.path().join("b.sqlite")).unwrap();
         let id = "a".repeat(64);
         let first = a.progress(&id, "a", 300.0, None, false).unwrap();
-        b.merge_progress(&[first.clone()]).unwrap();
+        b.merge_progress(std::slice::from_ref(&first)).unwrap();
         let rewind = b.progress(&id, "b", 120.0, None, false).unwrap();
         a.merge_progress(&[rewind.clone(), first]).unwrap();
         assert_eq!(a.get::<Progress>("progress", &id).unwrap().unwrap(), rewind);
@@ -158,7 +179,7 @@ mod tests {
         let id = "b".repeat(64);
         let pa = a.progress(&id, "a", 200.0, None, false).unwrap();
         let pb = b.progress(&id, "b", 50.0, None, false).unwrap();
-        a.merge_progress(&[pb.clone()]).unwrap();
+        a.merge_progress(std::slice::from_ref(&pb)).unwrap();
         b.merge_progress(&[pa]).unwrap();
         assert_eq!(
             a.all::<Progress>("progress").unwrap(),
