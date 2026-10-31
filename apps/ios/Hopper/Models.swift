@@ -24,6 +24,8 @@ struct MediaItem: Decodable, Identifiable {
 struct QueueState: Codable { var items: [String] = []; var current: String? }
 struct Library: Decodable {
     let device: Device; let items: [MediaItem]; let peers: [Peer]; let queue: QueueState
+    var home: Device? = nil
+    var deliveries: [HomeDelivery]? = nil
     var podcasts: PodcastCatalogue? = nil
     static let empty = Library(device: Device(id: "", name: "This iPhone"), items: [], peers: [], queue: QueueState())
 }

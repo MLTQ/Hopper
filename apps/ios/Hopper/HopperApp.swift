@@ -31,7 +31,7 @@ struct HopperApp: App {
             .alert("Hopper", isPresented: Binding(get: { client.error != nil }, set: { if !$0 { client.error = nil } })) { Button("OK") { client.error = nil } } message: { Text(client.error ?? "") }
             .task { await client.start(); player.restore() }
             .onChange(of: phase) { new in
-                if new == .active { Task { await client.refresh(sync: true); player.restore() } }
+                if new == .active { Task { await client.refresh(sync: true); await client.drainShareInbox(); player.restore() } }
                 else { player.checkpoint() }
             }
         }

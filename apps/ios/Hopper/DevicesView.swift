@@ -9,6 +9,9 @@ struct DevicesView: View {
     var body: some View {
         NavigationStack {
             List {
+                HomeSection()
+                SharedInboxSection()
+                DeliverySection()
                 Section {
                     Label { VStack(alignment: .leading) { Text(client.library.device.name); Text("This device").font(.caption).foregroundColor(HopperTheme.muted) } } icon: { Image(systemName: "iphone").foregroundColor(HopperTheme.forest) }
                     ForEach(client.library.peers) { peer in

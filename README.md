@@ -22,10 +22,15 @@ checks are recorded below. Linux/Windows runtime verification remains outstandin
 - Play audio/video on desktop and through AVQueuePlayer on iOS, with per-device queues.
 - Sync playback progress, including intentional rewinds; persist native iOS checkpoints.
 - Extract titles, creators, duration and M4B chapters when desktop ffprobe is available.
-- Subscribe to RSS podcasts on a desktop and browse/control them from paired desktop/iOS apps.
+- Import Apple Podcasts links, RSS feeds, or Castamatic OPML subscription lists.
+- Choose a Home desktop; laptop/phone additions wait for delivery there, with visible receipts.
+- Browse/control desktop-owned podcasts from paired desktop/iOS apps.
 - Set per-show ad cuts, banter/promos, fades, confidence and automatic preparation of future episodes.
 - Process through a built-in audio LLM connection, Hermes/custom command, or external MCP inbox.
 - Preserve originals and remap chapters, supported transcripts, soundbites and listening position.
+
+See [imports and Home setup](docs/imports-and-home.md) for Apple/Castamatic migration and the iOS
+share extension. Spotify is deferred. Subscription imports do not include listening history.
 
 Configure **Podcasts → Audio agent** on the processing desktop before starting cuts. Audio processing
 requires FFmpeg and FFprobe. See [audio-agent setup](docs/agents.md) for provider requirements,

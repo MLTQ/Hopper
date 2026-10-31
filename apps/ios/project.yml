@@ -16,8 +16,11 @@ targets:
     sources:
       - path: Hopper
         excludes: ["**/*.md"]
+      - path: Shared
+        excludes: ["**/*.md"]
     settings:
       base:
+        CODE_SIGN_ENTITLEMENTS: Hopper/Hopper.entitlements
         PRODUCT_BUNDLE_IDENTIFIER: app.hopper.player.ios
         INFOPLIST_FILE: Hopper/Info.plist
         SWIFT_OBJC_BRIDGING_HEADER: Hopper/Hopper-Bridging-Header.h
@@ -26,8 +29,25 @@ targets:
         OTHER_LDFLAGS: ["-lresolv"]
         "EXCLUDED_ARCHS[sdk=iphonesimulator*]": x86_64
     dependencies:
+      - target: HopperShare
+        embed: true
       - framework: build/HopperCore.xcframework
         embed: false
       - sdk: Security.framework
       - sdk: SystemConfiguration.framework
       - sdk: Network.framework
+  HopperShare:
+    type: app-extension
+    platform: iOS
+    sources:
+      - path: HopperShare
+        excludes: ["**/*.md"]
+      - path: Shared
+        excludes: ["**/*.md"]
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: app.hopper.player.ios.share
+        INFOPLIST_FILE: HopperShare/Info.plist
+        CODE_SIGN_ENTITLEMENTS: HopperShare/HopperShare.entitlements
+        APPLICATION_EXTENSION_API_ONLY: YES
+        SKIP_INSTALL: YES

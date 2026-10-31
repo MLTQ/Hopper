@@ -11,3 +11,6 @@ Desktop library interaction: filtering, folders, uploads, pairing, source availa
 - Empty libraries are real empty states; no fabricated media or simulated online devices.
 - Native file chooser supports recursive folders; dropping folders is not yet recursive.
 - Podcast browsing delegates to podcasts.js and keeps the existing playback/queue instance alive.
+
+Devices includes a preferred Home picker and durable delivery statuses. New file imports are
+forwarded by the core when Home is remote; referenced originals are copied before delivery.

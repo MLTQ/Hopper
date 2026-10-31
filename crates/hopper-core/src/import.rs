@@ -192,10 +192,14 @@ pub fn import_paths(store: &Store, paths: &[PathBuf]) -> ImportReport {
                 .unwrap_or(Path::new(""))
                 .to_string_lossy()
                 .replace('\\', "/");
-            match inspect(entry.path(), &filename, &folder, false)
-                .and_then(|m| store.put("local", &m.media.id, &m))
-            {
-                Ok(()) => report.added += 1,
+            match inspect(entry.path(), &filename, &folder, false).and_then(|m| {
+                store.put("local", &m.media.id, &m)?;
+                Ok(m.media.id)
+            }) {
+                Ok(id) => {
+                    report.added += 1;
+                    report.item_ids.push(id);
+                }
                 Err(e) => report
                     .errors
                     .push(format!("{}: {e}", entry.path().display())),

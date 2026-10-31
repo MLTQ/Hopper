@@ -6,3 +6,5 @@ The show owner is authoritative. Paired clients send commands to that owner; ori
 iOS can browse/play and submit jobs to a desktop, but never launches an agent or FFmpeg process.
 
 Agent configuration is separate from analysis adapters; llm handles actual bounded audio input.
+
+intake parses OPML and resolves supported share links for the Home delivery receiver.

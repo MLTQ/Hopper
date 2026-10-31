@@ -1,3 +1,4 @@
+import { homePicker, deliveryList } from './home.js';
 import { api, escape as esc, time, duration, tone, initials } from './api.js';
 import { Player } from './player.js';
 import { Podcasts } from './podcasts.js';
@@ -57,7 +58,7 @@ function renderQueue() {
 }
 function dialog(title, body) { $('dialog-title').textContent = title; $('dialog-body').innerHTML = body; if (!$('dialog').open) $('dialog').showModal(); }
 function addDialog() {
-  dialog('Put something in the hopper', `<p class="dialog-lead">A file, a folder, a whole afternoon of listening.</p><button id="choose-files" class="import-choice"><span>♫</span><div><strong>Choose media files</strong><small>Copy audio, audiobooks, or video into Hopper</small></div>↗</button><button id="choose-folder" class="import-choice"><span>▱</span><div><strong>Choose a folder</strong><small>Keep its folder structure in your library</small></div>↗</button><details><summary>Or reference a folder on this desktop</summary><p class="hint">Files stay where they are. Keep the folder available while this desktop serves them.</p><form id="import-path"><input name="path" placeholder="Full path to a file or folder" required><button class="primary">Add folder</button></form></details>`);
+  dialog('Put something in the hopper', `<p class="dialog-lead">A file, a folder, a whole afternoon of listening.</p><button id="choose-files" class="import-choice"><span>♫</span><div><strong>Choose media files</strong><small>Copy audio, audiobooks, or video into Hopper</small></div>↗</button><button id="choose-folder" class="import-choice"><span>▱</span><div><strong>Choose a folder</strong><small>Keep its folder structure in your library</small></div>↗</button><details><summary>Or reference a folder on this desktop</summary><p class="hint">With this desktop as Home, files stay where they are. With a remote Home, Hopper makes a copy to send.</p><form id="import-path"><input name="path" placeholder="Full path to a file or folder" required><button class="primary">Add folder</button></form></details>`);
   $('choose-files').onclick = () => $('file-input').click(); $('choose-folder').onclick = () => $('folder-input').click();
   const podcastButton = document.createElement('button'); podcastButton.className = 'import-choice'; podcastButton.textContent = '◉ Subscribe to a podcast ↗'; podcastButton.onclick = () => { view = 'podcasts'; render(); podcasts.subscribe(); }; $('dialog-body').prepend(podcastButton);
   $('import-path').onsubmit = async e => { e.preventDefault(); const button = e.target.querySelector('button'); button.disabled = true; button.textContent = 'Reading your collection…'; try { const r = await api('import', { paths: [new FormData(e.target).get('path')] }); imported(r); } catch (e) { toast(e.message, true); } finally { button.disabled = false; button.textContent = 'Add folder'; } };
@@ -75,7 +76,8 @@ function pairDialog() {
   $('pair-form').onsubmit = async e => { e.preventDefault(); const button = e.target.querySelector('button'); button.disabled = true; button.textContent = 'Finding your device…'; try { await api('pair', { code: new FormData(e.target).get('code') }); $('dialog').close(); await load(); toast('Your devices are paired'); } catch (e) { toast(e.message, true); } finally { button.disabled = false; button.textContent = 'Pair this device'; } };
 }
 function devicesDialog() {
-  dialog('Your devices', `<p class="dialog-lead">One collection, wherever you put it.</p><div class="device-card"><span class="live-dot"></span><div><strong>${esc(library.device?.name)}</strong><small>This device</small></div></div>` + library.peers.map(p => `<div class="device-card"><span class="${p.online ? 'live-dot' : 'offline-dot'}"></span><div><strong>${esc(p.name)}</strong><small>${p.online ? 'Connected' : esc(p.error || 'Not connected yet')}</small></div><button class="text-button" data-unpair="${p.id}">Unpair</button></div>`).join('') + '<button class="primary" data-pair>＋ Pair a device</button><p class="hint">Keep a desktop running to stream from it. Download a copy to listen when it is offline.</p>');
+  dialog('Your devices', homePicker(library) + deliveryList(library) + `<p class="dialog-lead">One collection, wherever you put it.</p><div class="device-card"><span class="live-dot"></span><div><strong>${esc(library.device?.name)}</strong><small>This device</small></div></div>` + library.peers.map(p => `<div class="device-card"><span class="${p.online ? 'live-dot' : 'offline-dot'}"></span><div><strong>${esc(p.name)}</strong><small>${p.online ? 'Connected' : esc(p.error || 'Not connected yet')}</small></div><button class="text-button" data-unpair="${p.id}">Unpair</button></div>`).join('') + '<button class="primary" data-pair>＋ Pair a device</button><p class="hint">Keep a desktop running to stream from it. Download a copy to listen when it is offline.</p>');
+  document.getElementById('home-device').onchange = async event => { try { await api('home', { device_id: event.target.value }); await load(); toast('Home desktop saved'); } catch (e) { toast(e.message, true); } };
 }
 function detail(id) {
   const item = library.items.find(i => i.id === id); if (!item) return;
@@ -85,6 +87,7 @@ document.addEventListener('click', async e => {
   const target = e.target.closest('button'); if (!target) return;
   const d = target.dataset;
   try { await podcasts.click(target); } catch (error) { toast(error.message, true); }
+  if (d.deliveryRetry) { try { await api(`deliveries/${d.deliveryRetry}/retry`, {}); await load(); toast('Queued to retry'); } catch (e) { toast(e.message, true); } }
   if (d.play) player.play(d.play);
   if (d.enqueue) { player.enqueue(d.enqueue); toast('Added to your queue'); }
   if (d.detail) detail(d.detail);

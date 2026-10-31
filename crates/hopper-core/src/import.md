@@ -12,3 +12,5 @@ Reference local media without modifying it, hash identity, and extract optional 
 - Raw AAC uses audio/aac; MP4 audio containers use audio/mp4.
 
 Desktop FFmpeg tools resolve through media_tools, including standard macOS Homebrew locations.
+
+Import reports include successful item IDs so local API callers can queue verified Home deliveries.

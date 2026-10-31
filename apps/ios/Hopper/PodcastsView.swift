@@ -6,11 +6,12 @@ struct PodcastsView: View {
     var body: some View {
         NavigationStack {
             List {
+                DeliverySection()
                 if client.podcasts.shows.isEmpty {
                     VStack(spacing: 18) {
                         Image(systemName: "dot.radiowaves.left.and.right").font(.largeTitle)
                         Text("Good company, on repeat.").font(.system(size: 26, design: .serif))
-                        Text("Subscribe with a podcast’s RSS feed link. Its episodes will appear across your paired devices.").font(.subheadline).multilineTextAlignment(.center)
+                        Text("Import an Apple Podcasts link or a Castamatic subscription list. Its episodes will appear across your paired devices.").font(.subheadline).multilineTextAlignment(.center)
                         Button("Subscribe to a podcast") { subscribing = true }.buttonStyle(.borderedProminent)
                     }.foregroundColor(HopperTheme.forest).padding(.vertical, 55).frame(maxWidth: .infinity).listRowBackground(HopperTheme.background).listRowSeparator(.hidden)
                 }
@@ -29,32 +30,6 @@ struct PodcastsView: View {
                 .navigationTitle("Podcasts").toolbar { Button { subscribing = true } label: { Image(systemName: "plus") }.accessibilityLabel("Subscribe to a podcast") }
                 .refreshable { await client.refresh(sync: true) }
                 .sheet(isPresented: $subscribing) { SubscribePodcastView() }
-        }
-    }
-}
-
-struct SubscribePodcastView: View {
-    @EnvironmentObject var client: HopperClient
-    @Environment(\.dismiss) var dismiss
-    @State private var url = ""
-    @State private var owner = ""
-    private var hosts: [PodcastHost] { client.podcasts.hosts.filter { $0.desktop && $0.online } }
-    var body: some View {
-        NavigationStack {
-            Form {
-                Section("Podcast RSS feed") { TextField("https://…/feed.xml", text: $url).keyboardType(.URL).textInputAutocapitalization(.never).autocorrectionDisabled() }
-                Section {
-                    if hosts.isEmpty { Text("Pair an online desktop in Devices to host your podcast library.") }
-                    else { Picker("Keep this show on", selection: $owner) { ForEach(hosts) { Text($0.device.name).tag($0.id) } } }
-                } footer: { Text("This desktop checks for episodes and prepares your audio. Your iPhone can stream or keep a copy.") }
-                Button {
-                    Task {
-                        do { let _ = try await client.podcast(PodcastCommand(ownerId: owner, action: "subscribe", url: url)); dismiss() }
-                        catch { client.error = error.localizedDescription }
-                    }
-                } label: { if client.working { ProgressView("Reading feed…") } else { Text("Subscribe") } }.disabled(url.isEmpty || owner.isEmpty || client.working)
-            }.navigationTitle("Subscribe").toolbar { Button("Cancel") { dismiss() } }
-                .onAppear { owner = hosts.first?.id ?? "" }
         }
     }
 }

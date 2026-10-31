@@ -23,3 +23,5 @@ Explicit pair trust, cached catalogue/progress exchange, and streaming over Iroh
 - Pair each intended device pair explicitly. Removing a peer cannot erase its downloaded copies.
 
 Revocation closes the cached connection after removing trust; guard checks are Clippy-clean.
+
+Paired Deliver requests dispatch to desktop Home intake. Only IDs published in the sender catalogue can trigger verified copies; local executable/credential configuration remains inaccessible.

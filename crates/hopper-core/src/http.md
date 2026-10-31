@@ -16,3 +16,5 @@ Loopback-only shell API and byte-range media gateway used by web/native players.
 
 GET/POST /api/podcasts/agent read redacted local status or save desktop configuration. This route
 is never forwarded over Iroh. The agents.js module supplies the desktop setup dialog.
+
+POST /home selects a paired desktop; /add-podcasts queues Apple/RSS/OPML imports. /deliveries/:id/retry retries failed/offline additions. File import/upload routes successful item IDs to Home with a managed staging copy.

@@ -3,6 +3,7 @@ pub mod agent;
 mod analyzer;
 pub mod feed;
 mod fetch;
+pub mod intake;
 #[cfg(not(target_os = "ios"))]
 mod llm;
 #[cfg(not(target_os = "ios"))]

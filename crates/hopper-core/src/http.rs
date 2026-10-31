@@ -49,6 +49,9 @@ pub(crate) async fn serve(node: Node) -> Result<u16> {
         .route("/play/:id", post(play))
         .route("/keep/:id", post(keep))
         .route("/podcasts/command", post(podcast_command))
+        .route("/home", post(set_home))
+        .route("/add-podcasts", post(add_podcasts))
+        .route("/deliveries/:id/retry", post(retry_delivery))
         .route("/podcasts/agent", get(agent_status).post(agent_config))
         .layer(middleware::from_fn_with_state(node.clone(), authenticate));
     let app = Router::new()
@@ -105,6 +108,15 @@ pub(crate) async fn serve(node: Node) -> Result<u16> {
                 (
                     [(header::CONTENT_TYPE, "text/javascript")],
                     include_str!("../../../ui/agents.js"),
+                )
+            }),
+        )
+        .route(
+            "/home.js",
+            get(|| async {
+                asset(
+                    "text/javascript; charset=utf-8",
+                    include_str!("../../../ui/home.js"),
                 )
             }),
         )
@@ -187,6 +199,23 @@ async fn agent_config(
 ) -> Api<crate::podcast::agent::AgentStatus> {
     Ok(Json(node.set_agent_config(config)?))
 }
+async fn set_home(
+    State(node): State<Node>,
+    Json(settings): Json<crate::home::Settings>,
+) -> Api<Library> {
+    node.set_home(settings)?;
+    Ok(Json(node.library()?))
+}
+async fn add_podcasts(
+    State(node): State<Node>,
+    Json(input): Json<crate::home::AddPodcasts>,
+) -> Api<crate::home::Added> {
+    Ok(Json(node.add_podcasts(input)?))
+}
+async fn retry_delivery(State(node): State<Node>, Path(id): Path<String>) -> Api<Value> {
+    node.retry_delivery(&id)?;
+    Ok(Json(json!({"ok":true})))
+}
 async fn refresh(State(node): State<Node>) -> Api<Library> {
     node.refresh().await?;
     Ok(Json(node.library()?))
@@ -217,7 +246,8 @@ async fn import_paths(
     if input.paths.len() > 1000 {
         return Err(anyhow::anyhow!("too many import paths").into());
     }
-    Ok(Json(node.import(input.paths).await?))
+    let report = node.import(input.paths).await?;
+    Ok(Json(report))
 }
 #[derive(Deserialize)]
 struct ProgressInput {
@@ -285,7 +315,11 @@ async fn upload(State(node): State<Node>, mut multipart: Multipart) -> Api<Impor
         local.path = dest;
         local.modified = import::modified(&std::fs::metadata(&local.path)?);
         node.0.store.put("local", &local.media.id, &local)?;
+        report.item_ids.push(local.media.id);
         report.added += 1;
+    }
+    if let Err(error) = node.send_imports_home(&report.item_ids).await {
+        report.errors.push(error.to_string());
     }
     Ok(Json(report))
 }

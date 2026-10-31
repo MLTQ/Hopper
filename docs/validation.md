@@ -61,3 +61,20 @@ No physical-iPhone background-playback result is claimed by compilation or simul
 Real ad-recognition precision, long-episode costs, Hermes audio tools and Dot/Muse client integration
 remain unvalidated. Cleaned RSS export and full Podcasting 2.0 compliance remain follow-up work.
 CI now installs FFmpeg/Python for these tests, but no remote CI run has been performed.
+
+## Imports and Home checks — October 31, 2026
+- Eleven Rust tests passed: six unit tests and five integration tests. New fixtures exercise three
+  independent Iroh nodes, OPML deduplication, Home ownership, receipt replay, managed file delivery,
+  unchanged/moved originals, playback-copy availability after laptop shutdown, and persistent
+  pending additions after sender restart while Home is offline. Import-routing changes were retested.
+- Live public Apple lookup checked against Apple Events: the parent-show response includes feedUrl,
+  episodeGuid and episodeUrl. Direct episode-ID lookup returned no results; the implementation now
+  queries the parent show with entity=podcastEpisode, bounds results to 200 and verifies both IDs.
+  Parser/matching unit tests were rerun after this correction. No actual podcast audio was fetched.
+- Clippy with warnings denied and desktop JavaScript syntax/whitespace checks passed.
+- macOS Tauri app bundle rebuilt. Rust arm64 iPhone/device and simulator libraries compiled;
+  the SwiftUI app and embedded HopperShare extension compiled for the simulator.
+- This feature has not been walked through in the native UI or shared into from the actual Apple
+  Podcasts/Castamatic apps. Physical App Group signing, real OPML exports, share-extension lifecycle,
+  mobile suspension, WAN delivery and Linux/Windows runtime behavior remain unverified. The
+  generated OPML fixture is not represented as a real Castamatic export. See hopper-lky.13.

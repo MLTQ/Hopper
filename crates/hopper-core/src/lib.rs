@@ -1,4 +1,6 @@
+mod delivery_worker;
 mod ffi;
+pub mod home;
 mod http;
 pub mod import;
 mod media;
@@ -75,6 +77,8 @@ struct Inner {
     podcast_commands: tokio::sync::Mutex<()>,
     podcast_downloads: tokio::sync::Mutex<()>,
     podcast_wake: tokio::sync::Notify,
+    delivery_wake: tokio::sync::Notify,
+    deliveries: tokio::sync::Mutex<()>,
     _lock: File,
 }
 
@@ -162,10 +166,13 @@ impl Node {
             podcast_commands: Default::default(),
             podcast_downloads: Default::default(),
             podcast_wake: Default::default(),
+            delivery_wake: Default::default(),
+            deliveries: Default::default(),
             _lock: lock,
         }));
         node.start_accepting();
         node.start_podcasts();
+        node.start_deliveries();
         let port = http::serve(node.clone()).await?;
         let hello = Hello {
             port,
@@ -288,6 +295,8 @@ impl Node {
         });
         Ok(Library {
             device: self.0.device.clone(),
+            home: self.home_device()?,
+            deliveries: self.deliveries()?,
             podcasts,
             items,
             queue: self.0.store.get("queue", "current")?.unwrap_or_default(),
@@ -304,9 +313,15 @@ impl Node {
 
     pub async fn import(&self, paths: Vec<PathBuf>) -> Result<ImportReport> {
         let node = self.clone();
-        tokio::task::spawn_blocking(move || import::import_paths(&node.0.store, &paths))
-            .await
-            .map_err(Into::into)
+        let mut report =
+            tokio::task::spawn_blocking(move || import::import_paths(&node.0.store, &paths))
+                .await?;
+        if let Err(error) = self.send_imports_home(&report.item_ids).await {
+            report.errors.push(format!(
+                "Imported locally, but could not queue for Home: {error}"
+            ));
+        }
+        Ok(report)
     }
 
     pub fn set_queue(&self, queue: Queue) -> Result<()> {

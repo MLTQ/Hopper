@@ -21,3 +21,8 @@ Desktop FFmpeg tools resolve through media_tools, including standard macOS Homeb
 
 Public library/snapshot catalogues strip full editing documents to keep long podcast transcripts
 from filling peer frames. Original and cleaned metadata remain in the owner’s durable records.
+
+Owns Home delivery wake/serialization and a durable sender worker. Local libraries include Home and delivery status; snapshots never share outboxes or Home preferences.
+
+Node.import routes successful IDs to a remote Home after local import, so headless and UI imports
+share the same behavior. Delivery staging failures stay visible in ImportReport.errors.

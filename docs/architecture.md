@@ -51,6 +51,25 @@ file, and maps chapters, supported transcripts, soundbites and progress through 
 Failed/cancelled jobs cannot replace a ready episode. Original bytes remain available. iOS embeds
 the same catalogue/command core but launches neither agents nor FFmpeg.
 
+## Home and durable intake
+Home is a per-device preference, defaulting to self on desktop and unset on iOS. It must identify
+self or an explicitly paired desktop whose cached catalogue advertises desktop capability. A
+Home can be offline. New subscriptions and imports target it; old show owners and pending targets
+never silently change. These defaults preserve the distributed library model.
+
+Apple links resolve to public RSS on the receiving desktop. OPML is bounded and traversed locally;
+each feed gets an outbox job. File imports stage managed bytes before enqueue. Typed Deliver
+requests are authenticated like other Iroh operations; Home only fetches media IDs present in the
+sender's catalogue and verifies/copies before acknowledging. Source files are untouched. Sender
+restarts recover interrupted jobs; transport errors back off and explicit errors require retry.
+Receipts key on sender/job ID. The operation layer is idempotent across acknowledgement loss.
+No new service or public endpoint is exposed. Catalogue snapshots exclude outbox/settings.
+
+The iOS share extension only writes an App Group inbox. Main-app startup/foreground drains it into
+the core outbox, using stable batch IDs and removing manifests only after enqueue acknowledgement.
+The main app and extension have separate lifetimes; neither this inbox nor Iroh promises background
+execution after the phone app is suspended or terminated. See [setup](imports-and-home.md).
+
 ## Scope and validation
 The current slice includes RSS subscriptions, pluggable audio processing and timeline remapping.
 Full Podcasting 2.0 support, cleaned RSS publishing, transcript/vector search, watched-folder

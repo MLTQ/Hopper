@@ -9,3 +9,5 @@ exactly `length` raw bytes. Requests never contain filesystem paths. Pair is the
 allowed before the connection identity has been authorized. Callers bound handshake timeouts.
 Podcast commands operate on the authenticated owner's subscriptions/jobs, never local executable
 configuration or filesystem paths. Responses return show/media/job IDs; snapshots carry status.
+
+Deliver/Delivered carry typed podcast links or published media IDs and idempotent receipts, never arbitrary paths. A paired sender may add its own Hopper media to a receiving desktop library.

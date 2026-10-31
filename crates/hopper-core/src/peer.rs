@@ -309,6 +309,10 @@ impl Node {
             .await
             .insert(conn.remote_id(), conn.clone());
         match request {
+            Request::Deliver { id, payload } => {
+                let receipt = self.receive_delivery(&remote, &id, payload).await?;
+                wire::write_json(send, &Response::Delivered { receipt }).await?;
+            }
             Request::Podcast { command } => {
                 let result = self.apply_podcast_command(command).await?;
                 wire::write_json(send, &Response::Podcast { result }).await?;

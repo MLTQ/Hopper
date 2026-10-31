@@ -8,6 +8,8 @@ final class HopperClient: ObservableObject {
     @Published var error: String?
     @Published var working = false
     private(set) var hello: Hello?
+    var drainingShares = false
+    var shareNoticeShown = false
     private var starting = false
     private var polling: Task<Void, Never>?
     let decoder: JSONDecoder = { let d = JSONDecoder(); d.keyDecodingStrategy = .convertFromSnakeCase; return d }()
@@ -31,6 +33,7 @@ final class HopperClient: ObservableObject {
             hello = try decoder.decode(Hello.self, from: data)
             ready = true
             await refresh()
+            await drainShareInbox()
             polling = Task { [weak self] in
                 while !Task.isCancelled {
                     try? await Task.sleep(nanoseconds: 15_000_000_000)

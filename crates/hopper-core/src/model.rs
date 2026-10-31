@@ -110,6 +110,8 @@ pub struct PeerStatus {
 
 #[derive(Clone, Debug, Serialize)]
 pub struct Library {
+    pub home: Option<Device>,
+    pub deliveries: Vec<crate::home::Delivery>,
     pub device: Device,
     pub items: Vec<LibraryItem>,
     pub peers: Vec<PeerStatus>,
@@ -119,6 +121,7 @@ pub struct Library {
 
 #[derive(Clone, Debug, Serialize, Default)]
 pub struct ImportReport {
+    pub item_ids: Vec<String>,
     pub added: usize,
     pub skipped: usize,
     pub errors: Vec<String>,

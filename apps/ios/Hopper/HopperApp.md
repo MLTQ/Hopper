@@ -13,3 +13,5 @@ Native iOS composition root: one client and player survive tab/sheet changes.
 Node startup precedes queue restoration. Foreground refreshes peer catalogues, backgrounding
 checkpoints playback without stopping the player. UI surfaces actual errors. No webview hosts
 the player, and no app lifecycle event synthesizes playback without user intent.
+
+Returning to the foreground resumes App Group share intake after refreshing the library.
