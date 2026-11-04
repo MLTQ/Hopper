@@ -1,13 +1,6 @@
 import SwiftUI
 import UniformTypeIdentifiers
 
-enum HopperTheme {
-    static let background = Color(red: 0.98, green: 0.98, blue: 0.95)
-    static let forest = Color(red: 0.19, green: 0.34, blue: 0.26)
-    static let muted = Color(red: 0.53, green: 0.59, blue: 0.48)
-    static let surface = Color(red: 0.92, green: 0.94, blue: 0.87)
-}
-
 struct MediaArt: View {
     let item: MediaItem
     var size: CGFloat = 52
@@ -17,7 +10,7 @@ struct MediaArt: View {
         ZStack {
             RoundedRectangle(cornerRadius: size / 10).fill(LinearGradient(colors: [colors[index % colors.count], colors[index % colors.count].opacity(0.6)], startPoint: .topLeading, endPoint: .bottomTrailing))
             Circle().stroke(.white.opacity(0.25), lineWidth: 1).frame(width: size * 0.9).offset(x: size * 0.25, y: -size * 0.2).clipped()
-            Text(item.initials).font(.system(size: size * 0.36, weight: .regular, design: .serif)).foregroundColor(HopperTheme.forest)
+            Text(item.initials).font(.system(size: size * 0.36, weight: .regular, design: .serif)).foregroundColor(Color(red: 0.19, green: 0.34, blue: 0.26))
         }.frame(width: size, height: size).clipShape(RoundedRectangle(cornerRadius: size / 10)).accessibilityHidden(true)
     }
 }
@@ -94,7 +87,7 @@ struct LibraryView: View {
                     }
                 }
             }
-            .listStyle(.plain).scrollContentBackground(.hidden).background(HopperTheme.background)
+            .listStyle(.plain).scrollContentBackground(.hidden).hopperScene()
             .navigationTitle("hopper.").navigationBarTitleDisplayMode(.inline)
             .searchable(text: $search, prompt: "Find something good")
             .refreshable { await client.refresh(sync: true) }

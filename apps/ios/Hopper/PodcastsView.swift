@@ -26,7 +26,7 @@ struct PodcastsView: View {
                         }.padding(.vertical, 7)
                     }.listRowBackground(HopperTheme.background)
                 }
-            }.listStyle(.plain).scrollContentBackground(.hidden).background(HopperTheme.background)
+            }.listStyle(.plain).scrollContentBackground(.hidden).hopperScene()
                 .navigationTitle("Podcasts").toolbar { Button { subscribing = true } label: { Image(systemName: "plus") }.accessibilityLabel("Subscribe to a podcast") }
                 .refreshable { await client.refresh(sync: true) }
                 .sheet(isPresented: $subscribing) { SubscribePodcastView() }
@@ -71,7 +71,7 @@ struct PodcastShowView: View {
                             }.disabled(preparing != nil)
                         }.padding(.vertical, 8).listRowBackground(HopperTheme.background)
                     }
-                }.listStyle(.plain).scrollContentBackground(.hidden).background(HopperTheme.background)
+                }.listStyle(.plain).scrollContentBackground(.hidden).hopperScene()
                     .navigationTitle(show.title).navigationBarTitleDisplayMode(.inline)
                     .toolbar {
                         Menu {

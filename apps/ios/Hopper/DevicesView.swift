@@ -38,7 +38,8 @@ struct DevicesView: View {
                         Text("Works once. Expires in ten minutes.").font(.caption).foregroundColor(HopperTheme.muted)
                     }
                 }
-            }.navigationTitle("Your devices").scrollContentBackground(.hidden).background(HopperTheme.background)
+                AppearanceSection()
+            }.navigationTitle("Your devices").scrollContentBackground(.hidden).hopperScene()
                 .refreshable { await client.refresh(sync: true) }
                 .confirmationDialog("Unpair this device?", isPresented: Binding(get: { removing != nil }, set: { if !$0 { removing = nil } })) {
                     Button("Unpair", role: .destructive) { if let peer = removing { Task { await client.unpair(peer.id) } }; removing = nil }

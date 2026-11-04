@@ -1,6 +1,6 @@
 # Validation record
 
-This file records observed checks, not target-platform promises. Updated October 30, 2026.
+This file records observed checks, not target-platform promises. Updated November 4, 2026.
 
 ## Automated checks already passed
 - Rust core unit tests: byte-range edge cases and Lamport progress convergence/rewind semantics.
@@ -78,3 +78,28 @@ CI now installs FFmpeg/Python for these tests, but no remote CI run has been per
   Podcasts/Castamatic apps. Physical App Group signing, real OPML exports, share-extension lifecycle,
   mobile suspension, WAN delivery and Linux/Windows runtime behavior remain unverified. The
   generated OPML fixture is not represented as a real Castamatic export. See hopper-lky.13.
+
+## Liquid glass appearance — November 4, 2026
+- Four desktop material tests passed: ink hysteresis, trimmed outliers, texture/chroma response,
+  secondary text at 4.5:1 against synthetic black/white/saturated extremes including highlights,
+  tint scaling and dense fallback. This is a numerical material check, not a measured native render.
+- Isolated headless Chromium checks passed under the production CSP: decoded card lenses,
+  shared podcast ink, unchanged light/dark geometry, saved independent tint preferences, dialog
+  lens exclusion, error color, compact layout, rerender/filter cleanup and no browser exceptions.
+- Reduced transparency, increased contrast and forced colors were emulated and verified to use
+  solid surfaces without SVG lenses. A non-Chromium user-agent guard retained CSS glass; this
+  checks the guard in Chromium, not Firefox/WebKit's actual rendering engine.
+- A regression check suspends animation frames before startup and verifies the initial sidebar,
+  queue and player material still initializes synchronously for background native windows.
+- Light/dark library, podcast and import/appearance dialog screenshots were visually reviewed.
+  Synthetic catalogue evidence is local and ignored: `artifacts/glass/`. No user media was imported.
+- All 11 Rust core unit/integration tests passed. Desktop check, Clippy with warnings denied,
+  JavaScript syntax, Rust formatting and whitespace checks passed. macOS Tauri debug app bundle
+  rebuilt; the native iOS simulator app and share extension build passed with the new palette.
+- Native macOS inspection exposed deferred animation-frame initialization and prompted the
+  synchronous startup fix. Further app UI automation timed out; full native interaction and the
+  corrected WebKit rendering are not claimed as verified. No iOS simulator walkthrough or physical
+  iPhone, Linux, Windows or Firefox runtime check was performed for this appearance change.
+
+See [material scope and changed files](liquid-glass.md). Native material contrast/performance and
+accessibility walkthroughs are tracked in hopper-tqd; existing platform/device release gates remain.

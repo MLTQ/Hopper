@@ -103,6 +103,33 @@ pub(crate) async fn serve(node: Node) -> Result<u16> {
             }),
         )
         .route(
+            "/material.css",
+            get(|| async {
+                asset(
+                    "text/css; charset=utf-8",
+                    include_str!("../../../ui/material.css"),
+                )
+            }),
+        )
+        .route(
+            "/glass.js",
+            get(|| async {
+                asset(
+                    "text/javascript; charset=utf-8",
+                    include_str!("../../../ui/glass.js"),
+                )
+            }),
+        )
+        .route(
+            "/glass-lens.js",
+            get(|| async {
+                asset(
+                    "text/javascript; charset=utf-8",
+                    include_str!("../../../ui/glass-lens.js"),
+                )
+            }),
+        )
+        .route(
             "/agents.js",
             get(|| async {
                 (

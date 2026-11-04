@@ -14,3 +14,6 @@ Desktop library interaction: filtering, folders, uploads, pairing, source availa
 
 Devices includes a preferred Home picker and durable delivery statuses. New file imports are
 forwarded by the core when Home is remote; referenced originals are copied before delivery.
+
+Appearance delegates to `Glass` in glass.js. It owns only device-local presentation preferences;
+library refreshes and dialogs retain the existing player instance.

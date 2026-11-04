@@ -2,11 +2,14 @@ import { homePicker, deliveryList } from './home.js';
 import { api, escape as esc, time, duration, tone, initials } from './api.js';
 import { Player } from './player.js';
 import { Podcasts } from './podcasts.js';
+import { Glass } from './glass.js';
 
 const $ = id => document.getElementById(id);
 let library = { items: [], peers: [], queue: { items: [] } }, view = 'all', folder = '', query = '', toastTimer;
 const player = new Player(renderQueue, message => toast(message, true));
 const podcasts = new Podcasts({ dialog, toast, load, player });
+const glass = new Glass();
+$('appearance').onclick = () => glass.settings(dialog);
 const names = { all: ['In the hopper', 'A home for everything you want to hear. And see.', 'All media'], continue: ['Pick up the thread', 'Right where you left off. Wherever you are.', 'Continue listening'], audiobook: ['Another chapter', 'Long stories. A little time for yourself.', 'Audiobooks'], audio: ['Good company', 'The voices, sounds, and songs you keep coming back to.', 'Audio'], video: ['Worth a watch', 'A little something for the bigger picture.', 'Video'], folders: ['Just as you left it', 'Your folders, across the devices you call home.', 'Folders'] };
 
 function toast(message, error = false) { clearTimeout(toastTimer); $('toast').textContent = message; $('toast').classList.toggle('error', error); $('toast').hidden = false; toastTimer = setTimeout(() => { $('toast').hidden = true; }, error ? 10000 : 4500); }

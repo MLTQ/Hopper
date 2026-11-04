@@ -2,8 +2,8 @@
 
 Podcasts is a fourth native tab with the same persistent player and client environment.
 
-The current cream/forest theme explicitly uses light appearance so system text and list surfaces
-retain readable contrast when the device itself uses dark mode. A complete dark palette is future work.
+The cream/forest theme follows the system appearance using the dynamic HopperTheme palette.
+Primary actions use a contrast-safe accent; native materials respect Reduce Transparency.
 The mini-player is inset inside each tab's content, keeping system tab navigation reachable.
 
 ## Purpose

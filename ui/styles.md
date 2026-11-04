@@ -10,3 +10,6 @@ Focus indicators and reduced-motion preferences are respected. Artwork is a dete
 placeholder until embedded image extraction is implemented.
 Podcast cards, episode rows and labeled cut-settings controls use the same quiet palette. Job
 errors/waiting state remain visible alongside an episode's original/playable variants.
+
+Shared glass, adaptive ink and appearance colors live in material.css. This file remains the source
+of truth for spacing, radii, typography and responsive geometry.
