@@ -8,3 +8,5 @@ Set a development team locally before physical-device installation; no team is a
 HopperShare is embedded with the Shared sources compiled into both targets. Enable App Group
 `group.app.hopper.player` for the app and extension when configuring physical-device signing.
 The extension stores URL/OPML intake; Rust and playback remain exclusively in the main app.
+
+Automatic signing requests App Group registration when Xcode provisions a device build.

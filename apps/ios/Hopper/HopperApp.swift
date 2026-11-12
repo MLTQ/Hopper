@@ -24,8 +24,7 @@ struct HopperApp: App {
                 DevicesView().safeAreaInset(edge: .bottom, spacing: 0) { MiniPlayer { showPlayer = true } }
                     .tabItem { Label("Devices", systemImage: "desktopcomputer") }
             }
-            .tint(HopperTheme.forest)
-            .preferredColorScheme(.light)
+            .tint(HopperTheme.accent)
             .environmentObject(client).environmentObject(player)
             .sheet(isPresented: $showPlayer) { PlayerView().environmentObject(player).environmentObject(client) }
             .alert("Hopper", isPresented: Binding(get: { client.error != nil }, set: { if !$0 { client.error = nil } })) { Button("OK") { client.error = nil } } message: { Text(client.error ?? "") }

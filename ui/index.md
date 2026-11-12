@@ -8,3 +8,6 @@ Element IDs are consumed by app.js/player.js. Media playback uses one persistent
 for audio and video; rerendering the collection never replaces it. No inline executable scripts
 or external assets. Controls are labeled and native inputs support keyboard navigation.
 Podcasts is a first-class navigation destination; its show/settings surfaces reuse the shared dialog.
+
+The existing avatar is an accessible Appearance button. material.css layers material tokens over
+styles.css without changing geometry. The system light/dark color scheme is advertised.

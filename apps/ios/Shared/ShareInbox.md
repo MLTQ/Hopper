@@ -6,3 +6,5 @@ removes a manifest only after its durable core outbox acknowledges it, using UUI
 to make replay safe. Bounded reads cap incoming files at 2 MB; the core remains XML authority.
 App Group entitlement/provisioning must be present on both targets. Missing configuration has
 an explicit manual paste/file-import fallback. The inbox is not a background execution promise.
+
+When a development build lacks the shared container, inbox polling returns an empty list so listeners can open Hopper. Attempting to share into that build reports the manual import options.

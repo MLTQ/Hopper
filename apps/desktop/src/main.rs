@@ -5,15 +5,22 @@ use tauri::{Manager, WebviewUrl, WebviewWindowBuilder};
 fn main() {
     tauri::Builder::default()
         .setup(|app| {
-            let name = std::env::var("HOSTNAME")
-                .or_else(|_| std::env::var("COMPUTERNAME"))
-                .unwrap_or_else(|_| "My desktop".into());
+            let name = Config::desktop_name();
             let mut config = Config::desktop(name)?;
             // Optional override makes two isolated desktops easy to exercise during development.
             if let Some(path) = std::env::var_os("HOPPER_DATA_DIR") {
                 config.data_dir = path.into();
             }
             let (node, hello) = tauri::async_runtime::block_on(Node::start(config))?;
+            node.set_folder_picker(Box::new(|| {
+                Box::pin(async {
+                    rfd::AsyncFileDialog::new()
+                        .set_title("Share a folder with your paired devices")
+                        .pick_folder()
+                        .await
+                        .map(|file| file.path().to_path_buf())
+                })
+            }));
             app.manage(node);
             let origin = format!("http://127.0.0.1:{}", hello.port);
             WebviewWindowBuilder::new(app, "main", WebviewUrl::External(hello.url().parse()?))

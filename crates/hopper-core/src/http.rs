@@ -40,6 +40,11 @@ pub(crate) async fn serve(node: Node) -> Result<u16> {
         .route("/library", get(library))
         .route("/refresh", post(refresh))
         .route("/invite", post(invite))
+        .route("/invite/qr", post(invite_qr))
+        .route("/folders", get(folders).post(share_folder))
+        .route("/folders/choose", post(choose_folder))
+        .route("/folders/:id", delete(stop_sharing))
+        .route("/folders/:id/rescan", post(rescan_folder))
         .route("/pair", post(pair))
         .route("/peers/:id", delete(unpair))
         .route("/import", post(import_paths))
@@ -85,6 +90,24 @@ pub(crate) async fn serve(node: Node) -> Result<u16> {
             }),
         )
         .route(
+            "/pairing.js",
+            get(|| async {
+                asset(
+                    "text/javascript; charset=utf-8",
+                    include_str!("../../../ui/pairing.js"),
+                )
+            }),
+        )
+        .route(
+            "/folders.js",
+            get(|| async {
+                asset(
+                    "text/javascript; charset=utf-8",
+                    include_str!("../../../ui/folders.js"),
+                )
+            }),
+        )
+        .route(
             "/player.js",
             get(|| async {
                 asset(
@@ -99,6 +122,33 @@ pub(crate) async fn serve(node: Node) -> Result<u16> {
                 asset(
                     "text/css; charset=utf-8",
                     include_str!("../../../ui/styles.css"),
+                )
+            }),
+        )
+        .route(
+            "/material.css",
+            get(|| async {
+                asset(
+                    "text/css; charset=utf-8",
+                    include_str!("../../../ui/material.css"),
+                )
+            }),
+        )
+        .route(
+            "/glass.js",
+            get(|| async {
+                asset(
+                    "text/javascript; charset=utf-8",
+                    include_str!("../../../ui/glass.js"),
+                )
+            }),
+        )
+        .route(
+            "/glass-lens.js",
+            get(|| async {
+                asset(
+                    "text/javascript; charset=utf-8",
+                    include_str!("../../../ui/glass-lens.js"),
                 )
             }),
         )
@@ -220,6 +270,60 @@ async fn refresh(State(node): State<Node>) -> Api<Library> {
     node.refresh().await?;
     Ok(Json(node.library()?))
 }
+async fn folders(State(node): State<Node>) -> Api<Value> {
+    Ok(Json(
+        json!({"folders": node.shared_folders(), "can_choose": node.0.folders.picker.get().is_some()}),
+    ))
+}
+#[derive(Deserialize)]
+struct FolderInput {
+    path: PathBuf,
+}
+async fn share_folder(
+    State(node): State<Node>,
+    Json(input): Json<FolderInput>,
+) -> Api<crate::folders::FolderInfo> {
+    Ok(Json(node.share_folder(input.path).await?))
+}
+async fn choose_folder(State(node): State<Node>) -> Api<Option<crate::folders::FolderInfo>> {
+    let picker = node
+        .0
+        .folders
+        .picker
+        .get()
+        .ok_or_else(|| anyhow::anyhow!("Enter the folder path on this desktop"))?;
+    let result = match picker().await {
+        Some(path) => Some(node.share_folder(path).await?),
+        None => None,
+    };
+    Ok(Json(result))
+}
+async fn rescan_folder(
+    State(node): State<Node>,
+    Path(id): Path<String>,
+) -> Api<crate::folders::FolderInfo> {
+    Ok(Json(node.rescan_folder(id).await?))
+}
+async fn stop_sharing(State(node): State<Node>, Path(id): Path<String>) -> Api<Value> {
+    node.stop_sharing_folder(id).await?;
+    Ok(Json(json!({"ok":true})))
+}
+
+async fn invite_qr(State(node): State<Node>) -> Api<Value> {
+    use base64::Engine;
+    let code = node.invite().await?;
+    let qr = qrcode::QrCode::new(code.as_bytes())?;
+    let svg = qr
+        .render::<qrcode::render::svg::Color>()
+        .quiet_zone(true)
+        .module_dimensions(6, 6)
+        .build();
+    let image = base64::engine::general_purpose::STANDARD.encode(svg.as_bytes());
+    Ok(Json(
+        json!({"code":code, "image":format!("data:image/svg+xml;base64,{image}"), "expires_in":600}),
+    ))
+}
+
 async fn invite(State(node): State<Node>) -> Api<Value> {
     Ok(Json(json!({"code":node.invite().await?,"expires_in":600})))
 }

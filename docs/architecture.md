@@ -14,6 +14,8 @@ and paired peers exchange catalogues and listening progress. The UI identifies f
 
 ## Identity and pairing
 Each installation persists an Iroh key. One-time, expiring invitations authorize a second key.
+The desktop QR contains the same invitation accepted by the text field. The phone decodes it
+on device and redeems it over the existing encrypted pairing connection.
 Pair devices explicitly; this first release does not silently extend trust to friends of peers.
 Pair the phone with each desktop, and pair desktops whose libraries should be visible together.
 All peer requests except invitation redemption require a paired connection identity.
@@ -24,7 +26,11 @@ Media IDs are BLAKE3 hashes of original file bytes; identical imports merge as o
 Local filesystem paths never cross the mesh. Logical folder paths are metadata only.
 Metadata may be read with ffprobe on desktop; absence must not prevent a supported import.
 Imported paths can be referenced in place; uploads and offline copies are managed by Hopper.
-Source files must remain present and unchanged to be served.
+Source files must remain present and unchanged to be served. Desktop shared folders persist
+as local registrations. A minute scan reconciles files by content ID, using size and modification
+time to reuse unchanged metadata. Each shared source is checked against its canonical path.
+A peer gets logical folder names and media IDs. Stopping a share removes that source, and
+independent imports, other desktops’ sources and downloaded copies keep their own lifetimes.
 
 Catalogues are cached for offline browsing. A catalogue item can have several sources; prefer a
 local file, then reachable paired peers. Progress uses Lamport revisions plus device-ID tie-breaks,
@@ -72,7 +78,7 @@ execution after the phone app is suspended or terminated. See [setup](imports-an
 
 ## Scope and validation
 The current slice includes RSS subscriptions, pluggable audio processing and timeline remapping.
-Full Podcasting 2.0 support, cleaned RSS publishing, transcript/vector search, watched-folder
-reconciliation and richer codec conversion remain tracked product work. Real inference accuracy
+Full Podcasting 2.0 support, cleaned RSS publishing, transcript/vector search, automatic offline folder
+replication and richer codec conversion remain tracked product work. Real inference accuracy
 and third-party client integrations require evaluation separately from deterministic contract tests.
 Cross-platform source/build workflows do not substitute for actual Windows/Linux/device testing.

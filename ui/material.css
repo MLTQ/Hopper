@@ -1,0 +1,164 @@
+/* The material is shared; component geometry stays in styles.css. */
+@property --glass-alpha { syntax: '<number>'; inherits: true; initial-value: .18; }
+@property --glass-tint { syntax: '<color>'; inherits: true; initial-value: white; }
+@property --glass-brightness { syntax: '<number>'; inherits: true; initial-value: 1.06; }
+@property --glass-saturation { syntax: '<number>'; inherits: true; initial-value: 1.8; }
+@property --glass-ink { syntax: '<color>'; inherits: true; initial-value: #242a26; }
+@property --glass-secondary { syntax: '<color>'; inherits: true; initial-value: #505b53; }
+
+:root {
+  color-scheme: light;
+  --canvas: #f7f8f2;
+  --ink: #263a31;
+  --green: #315843;
+  --muted: #5d6c60;
+  --line: #354e3726;
+  --solid: #f7f9f3;
+  --solid-raised: #fffef9;
+  --row-hover: #ffffff6b;
+  --row-selected: #ffffffc2;
+  --glass-tint: white;
+  --glass-rgb: 255, 255, 255;
+  --glass-alpha: .18;
+  --glass-ink: #242a26;
+  --glass-secondary: #505b53;
+  --glass-brightness: 1.06;
+  --glass-saturation: 1.8;
+  --glass-edge: inset 1.5px 1.5px 1px -1px #fffffff2,
+    inset -1.5px -1.5px 1px -1px #ffffff8c,
+    inset 0 0 0 .5px #ffffff4d, 0 0 0 .5px #0000000f,
+    inset 8px 10px 20px -18px #ffffffb3,
+    inset -5px -6px 16px -16px #253b2b59, 0 6px 24px #142a200f;
+  --glass-light: radial-gradient(ellipse at 0 0, #ffffff4d, transparent 55%);
+}
+:root[data-theme=dark] {
+  color-scheme: dark;
+  --canvas: #101c18;
+  --ink: #edf2e9;
+  --green: #b5d2ae;
+  --muted: #b3c1b3;
+  --line: #d4e6ce26;
+  --solid: #18271f;
+  --solid-raised: #23352a;
+  --row-hover: #ffffff12;
+  --row-selected: #ffffff21;
+  --glass-tint: rgb(20 20 24);
+  --glass-rgb: 20, 20, 24;
+  --glass-alpha: .38;
+  --glass-ink: #f3f5f1;
+  --glass-secondary: #bac4bc;
+  --glass-brightness: .8;
+  --glass-saturation: 1.6;
+  --glass-edge: inset 1.5px 1.5px 1px -1px #ffffff52,
+    inset -1.5px -1.5px 1px -1px #ffffff24,
+    inset 0 0 0 .5px #ffffff19, 0 0 0 .5px #00000066,
+    inset 8px 10px 20px -18px #ffffff4d, 0 6px 24px #00000029;
+  --glass-light: radial-gradient(ellipse at 0 0, #ffffff19, transparent 55%);
+}
+html { background: var(--canvas); color: var(--ink); }
+body {
+  color: var(--ink);
+  background-color: var(--canvas);
+  background-image: var(--scene-image);
+  background-size: 100vw 100vh;
+  background-attachment: fixed;
+  background-repeat: no-repeat;
+}
+.glass-surface {
+  background: var(--glass-light), rgba(var(--glass-rgb), var(--glass-alpha));
+  background: var(--glass-light), color-mix(in srgb, var(--glass-tint) calc(var(--glass-alpha) * 100%), transparent);
+  -webkit-backdrop-filter: blur(2px) saturate(var(--glass-saturation)) brightness(var(--glass-brightness));
+  backdrop-filter: blur(2px) saturate(var(--glass-saturation)) brightness(var(--glass-brightness)) var(--glass-lens, blur(0px));
+  box-shadow: var(--glass-edge);
+  color: var(--glass-ink);
+  border-color: transparent;
+  transition: --glass-alpha .24s ease, --glass-tint .24s ease, --glass-ink .24s ease,
+    --glass-secondary .24s ease, --glass-brightness .24s ease, --glass-saturation .24s ease;
+}
+.glass-surface[data-glass-ink=light] {
+  --glass-tint: rgb(16 18 22);
+  --glass-rgb: 16, 18, 22;
+  --glass-ink: #f3f5f1;
+  --glass-secondary: #bac4bc;
+  --glass-light: radial-gradient(ellipse at 0 0, #ffffff19, transparent 55%);
+  --glass-edge: inset 1px 1px 1px -1px #ffffff66, inset 0 0 0 .5px #ffffff26,
+    0 0 0 .5px #00000040, 0 6px 24px #00000014;
+}
+.continue-card:hover, .podcast-card:hover {
+  background-color: color-mix(in srgb, var(--glass-tint) 14%, transparent);
+}
+/* Apply ink to drawn content, never to artwork, video, primary actions or errors. */
+.glass-surface :is(h2, h3, strong, .nav-item, .icon-button, .round-play, .podcast-title) { color: var(--glass-ink); }
+.glass-surface :is(p, small, .eyebrow, .pair-link, .text-button, .queue-index,
+  .queue-subtitle, .queue-tip, .now-text small, .timeline span, .player-options>span,
+  .dialog-lead, .detail-hero p, .detail-hero small, summary, .chapters small,
+  .device-card small, .import-choice small, .podcast-title small) { color: var(--glass-secondary); }
+.glass-surface .hint { color: var(--glass-secondary)!important; }
+.glass-surface :is(.media-copy, .now-text, .continue-copy, .queue-track>div:last-child, .podcast-title, .breadcrumb) { mix-blend-mode: multiply; }
+:root[data-theme=dark] .glass-surface :is(.media-copy, .now-text, .continue-copy, .queue-track>div:last-child, .podcast-title, .breadcrumb),
+.glass-surface[data-glass-ink=light] :is(.media-copy, .now-text, .continue-copy, .queue-track>div:last-child, .podcast-title, .breadcrumb) { mix-blend-mode: plus-lighter; }
+.sidebar, .queue-panel, .player { border-color: var(--line); }
+.avatar { border: 1px solid var(--line); padding: 0; cursor: pointer; }
+.nav-item:hover, .media-row:hover, .icon-button:hover, .import-choice:hover,
+.chapters button:hover { background: var(--row-hover); }
+.nav-item.active, .queue-item.current, .media-row.current, .folder-chip.selected {
+  background: var(--row-selected); box-shadow: inset 0 0 0 .5px #ffffff99;
+}
+.nav-item.active>span { color: inherit; }
+.glass-surface .nav-item>span { color: var(--glass-ink); opacity: .7; }
+.glass-surface .nav-item.active>span { opacity: 1; }
+.nav-item b, .queue-heading h2 span, .avatar { background: var(--row-selected); color: var(--muted); }
+.side-divider { background: var(--line); }
+:is(.sidebar-bottom, .topbar, .list-heading, .media-row, .queue-item, .queue-empty,
+  .pair-section, .device-card, .chapters button, .episode-row) { border-color: var(--line); }
+h1, .empty-state h2 { color: var(--ink); }
+:is(.intro p, .accent, .eyebrow, .breadcrumb, .breadcrumb strong, .section-label span,
+  .media-copy small, .source-label, .length, .row-actions .icon-button, .list-heading,
+  .library-footer, .empty-state p, .empty-state>small, .empty-state>.text-button,
+  .empty-filter, .podcast-toolbar p, .podcast-description, .episode-row small,
+  .setting-toggle small, .search span, .search input::placeholder) { color: var(--muted); }
+.secondary, .folder-chip, .import-choice {
+  color: var(--ink); background: var(--solid); border-color: var(--line);
+}
+.secondary:hover, .folder-chip:hover { background: var(--solid-raised); }
+.search { background: var(--solid-raised); border-color: var(--line); }
+input:not([type=range]), textarea, .podcast-form input:not([type=checkbox]),
+.podcast-form select, .player-options select {
+  background: var(--solid-raised); color: var(--ink); border-color: var(--line);
+}
+.search input { padding: 0; background: transparent; border: 0; color: var(--ink); }
+.primary, .play-button, .brand-mark { color: var(--canvas); background: var(--green); }
+.primary:hover { background: color-mix(in srgb, var(--green) 90%, var(--ink)); }
+.brand-mark>span { color: #f0b57b; }
+.round-play { border-color: var(--line); }
+.empty-state { background: var(--solid); border-color: var(--line); }
+.podcast-cover { background: linear-gradient(135deg,#b4c9b8,#dce4c9 60%,#e8c2a3); color: #355b47; }
+.podcast-card>.icon-button { color: #263a31; }
+dialog::backdrop { background: #14271f35; -webkit-backdrop-filter: blur(5px); backdrop-filter: blur(5px); }
+#toast.error { background: #935c44; color: #fff; }
+.glass-surface .job-error { color: #9c4c33; }
+:root[data-theme=dark] .job-error { color: #ffb397; }
+:root[data-theme=dark] .job-notice { background: #473a27; }
+#close-video { background: #101812b3; color: #fff; }
+#drop-overlay { color: var(--ink); border-color: var(--green); }
+#drop-overlay>div, #drop-overlay span { color: inherit; }
+.appearance-form label { display: flex; flex-direction: column; gap: 10px; font-size: 12px; }
+.appearance-form select { padding: 10px; border: 1px solid var(--line); border-radius: 5px; background: var(--solid); color: var(--ink); }
+.appearance-form output { float: right; font-variant-numeric: tabular-nums; color: var(--glass-secondary); }
+.appearance-form input[type=range] { width: 100%; accent-color: var(--green); }
+.glass-filter { position: fixed; width: 0; height: 0; pointer-events: none; }
+@supports not ((backdrop-filter: blur(2px)) or (-webkit-backdrop-filter: blur(2px))) {
+  .glass-surface { background: var(--solid); }
+}
+@media (prefers-reduced-transparency: reduce), (prefers-contrast: more) {
+  .glass-surface { background: var(--solid); -webkit-backdrop-filter: none; backdrop-filter: none; }
+  .glass-surface[data-glass-ink=light] { background: #18271f; }
+  .glass-surface * { mix-blend-mode: normal!important; }
+  dialog::backdrop { -webkit-backdrop-filter: none; backdrop-filter: none; background: #101c18b3; }
+}
+@media (forced-colors: active) {
+  html, body, .glass-surface, .empty-state, input, textarea, select { background: Canvas!important; color: CanvasText!important; }
+  .glass-surface { -webkit-backdrop-filter: none; backdrop-filter: none; box-shadow: none; border: 1px solid CanvasText; }
+  .glass-surface * { mix-blend-mode: normal!important; }
+  button, .primary, .play-button { forced-color-adjust: auto; }
+}

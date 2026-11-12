@@ -18,3 +18,8 @@ GET/POST /api/podcasts/agent read redacted local status or save desktop configur
 is never forwarded over Iroh. The agents.js module supplies the desktop setup dialog.
 
 POST /home selects a paired desktop; /add-podcasts queues Apple/RSS/OPML imports. /deliveries/:id/retry retries failed/offline additions. File import/upload routes successful item IDs to Home with a managed staging copy.
+
+The loopback UI also serves material.css, glass.js and glass-lens.js through the same asset headers.
+These are presentation-only assets; no appearance preferences or backdrop pixels enter the API.
+
+The authenticated folder routes manage local registrations and invoke a picker supplied by the desktop shell. The QR route renders a one-use invitation locally. The pairing and folder UI modules are bundled assets.

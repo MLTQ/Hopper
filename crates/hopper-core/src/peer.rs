@@ -330,9 +330,7 @@ impl Node {
             Request::Media { id, offset, length } => {
                 ensure!(valid_id(&id), "invalid media ID");
                 let local = self
-                    .0
-                    .store
-                    .get::<LocalMedia>("local", &id)?
+                    .local_file(&id)?
                     .context("media is not on this device")?;
                 ensure!(
                     crate::import::available(&local),

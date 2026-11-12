@@ -10,13 +10,13 @@ This is an early implementation, not a finished release. See [validation](docs/v
 for the checks actually performed and remaining device tests.
 
 The local macOS development bundle is `target/debug/bundle/macos/Hopper.app`. The generated iOS
-project is `apps/ios/Hopper.xcodeproj`. Both have been built; macOS and simulator launch/playback
-checks are recorded below. Linux/Windows runtime verification remains outstanding.
+project is `apps/ios/Hopper.xcodeproj`. The macOS bundle and a physical iPhone have paired by QR and streamed a shared
+episode end to end. Linux/Windows runtime verification remains outstanding.
 
 ## Working vertical slice
 
-- Import media files or whole folders on any desktop, by reference or managed copy.
-- Pair installations using expiring, one-use invitations over encrypted Iroh connections.
+- Share a desktop folder in place, or import individual files and managed copies.
+- Scan a desktop’s one-use QR code with Hopper on iPhone to pair over encrypted Iroh connections.
 - Browse a combined catalogue with source-device status and cached offline metadata.
 - Stream with HTTP byte-range seeking; download a verified copy for offline playback.
 - Play audio/video on desktop and through AVQueuePlayer on iOS, with per-device queues.
@@ -37,8 +37,9 @@ requires FFmpeg and FFprobe. See [audio-agent setup](docs/agents.md) for provide
 external-agent integration and current limits. No paid model or API key is selected automatically.
 
 Identical file bytes merge into one library item with multiple available sources. Your source
-files are preserved. Folder paths are retained as library metadata. New files in imported folders
-are picked up by reimporting; automatic watching/mirroring is not implemented yet.
+files are preserved. Shared folders retain their names and subfolders on paired devices. Hopper
+checks them when the desktop starts and every minute while it runs. The desktop’s Folders view
+has controls to rescan or stop sharing. A one-time import remains a separate action.
 
 ## Run a desktop
 
@@ -90,11 +91,11 @@ cellular transitions, long pauses, and extended locked playback.
 
 ## Pair and listen
 
-1. Open Hopper on a desktop. Add a few files/folders.
-2. Select **Pair a device → Create invitation**.
-3. On iPhone, open **Devices**, paste the invitation, and pair.
-4. Repeat with the other desktops. Pair desktops to each other if they should browse one another.
-5. Play from the combined library, add items to Up next, or choose **Keep on this device**.
+1. On the desktop, open **Put something in → Share a desktop folder → Choose folder…** and pick your podcast archive.
+2. Open **Pair a device → Create pairing QR code**. Keep the code on screen.
+3. On iPhone, open **Hopper → Devices → Scan pairing QR code**, allow the camera, and scan the desktop. You can also paste the invitation in Devices.
+4. In the iPhone **Library**, choose **All folders**, select the archive, and tap an episode to stream it. **Play all** queues the filtered list.
+5. Repeat the QR scan for each additional desktop. All paired libraries appear together. Use **Keep on this device** on an episode for offline listening.
 
 Original-owning desktops must stay online for streaming. Downloaded copies work offline and are
 also available from that paired device while it is serving. Closing a desktop app stops its node.

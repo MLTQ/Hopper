@@ -2,11 +2,7 @@ use hopper_core::{Config, Node};
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
-    let mut config = Config::desktop(
-        std::env::var("HOSTNAME")
-            .or_else(|_| std::env::var("COMPUTERNAME"))
-            .unwrap_or_else(|_| "My desktop".into()),
-    )?;
+    let mut config = Config::desktop(Config::desktop_name())?;
     let mut imports = vec![];
     let mut args = std::env::args().skip(1);
     while let Some(arg) = args.next() {

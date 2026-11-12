@@ -1,13 +1,6 @@
 import SwiftUI
 import UniformTypeIdentifiers
 
-enum HopperTheme {
-    static let background = Color(red: 0.98, green: 0.98, blue: 0.95)
-    static let forest = Color(red: 0.19, green: 0.34, blue: 0.26)
-    static let muted = Color(red: 0.53, green: 0.59, blue: 0.48)
-    static let surface = Color(red: 0.92, green: 0.94, blue: 0.87)
-}
-
 struct MediaArt: View {
     let item: MediaItem
     var size: CGFloat = 52
@@ -17,7 +10,7 @@ struct MediaArt: View {
         ZStack {
             RoundedRectangle(cornerRadius: size / 10).fill(LinearGradient(colors: [colors[index % colors.count], colors[index % colors.count].opacity(0.6)], startPoint: .topLeading, endPoint: .bottomTrailing))
             Circle().stroke(.white.opacity(0.25), lineWidth: 1).frame(width: size * 0.9).offset(x: size * 0.25, y: -size * 0.2).clipped()
-            Text(item.initials).font(.system(size: size * 0.36, weight: .regular, design: .serif)).foregroundColor(HopperTheme.forest)
+            Text(item.initials).font(.system(size: size * 0.36, weight: .regular, design: .serif)).foregroundColor(Color(red: 0.19, green: 0.34, blue: 0.26))
         }.frame(width: size, height: size).clipShape(RoundedRectangle(cornerRadius: size / 10)).accessibilityHidden(true)
     }
 }
@@ -48,10 +41,22 @@ struct LibraryView: View {
     @State private var folder = ""
     @State private var importing = false
     @State private var detail: MediaItem?
+    private var folders: [String] {
+        var paths = Set<String>()
+        for item in client.library.items {
+            var path = ""
+            for part in item.folder.split(separator: "/") {
+                path = path.isEmpty ? String(part) : path + "/" + part
+                paths.insert(path)
+            }
+        }
+        return paths.sorted { $0.localizedStandardCompare($1) == .orderedAscending }
+    }
+
     private var items: [MediaItem] {
         client.library.items.filter { item in
             (filter == "all" || item.kind == filter || filter == "continue" && (item.progress?.position ?? 0) > 0 && item.progress?.completed == false)
-            && (folder.isEmpty || item.folder == folder)
+            && (folder.isEmpty || item.folder == folder || item.folder.hasPrefix(folder + "/"))
             && (search.isEmpty || "\(item.title) \(item.creator) \(item.folder)".localizedCaseInsensitiveContains(search))
         }.sorted { $0.title.localizedStandardCompare($1.title) == .orderedAscending }
     }
@@ -71,8 +76,9 @@ struct LibraryView: View {
                     VStack(spacing: 18) {
                         Image(systemName: "tray.and.arrow.down").font(.system(size: 47, weight: .ultraLight)).foregroundColor(HopperTheme.muted)
                         Text("Good things go in here.").font(.system(size: 23, design: .serif))
-                        Text("Pair a desktop in Devices to bring its collection along. Or add a file from this iPhone.").font(.subheadline).foregroundColor(HopperTheme.muted).multilineTextAlignment(.center)
-                        Button("Add a file") { importing = true }.buttonStyle(.borderedProminent)
+                        Text("Scan the invitation on your desktop to play its shared media.").font(.subheadline).foregroundColor(HopperTheme.muted).multilineTextAlignment(.center)
+                        ScanPairButton().buttonStyle(.borderedProminent)
+                        Button("Add a file") { importing = true }
                     }.frame(maxWidth: .infinity).padding(.vertical, 40).listRowBackground(HopperTheme.background).listRowSeparator(.hidden)
                 } else {
                     Section {
@@ -90,11 +96,20 @@ struct LibraryView: View {
                                 }
                         }
                     } header: {
-                        HStack { Text("\(items.count) items"); Spacer(); Button("Play all") { player.playAll(items) } }
+                        HStack {
+                            Menu {
+                                Button("All folders") { folder = "" }
+                                ForEach(folders, id: \.self) { path in
+                                    Button(path) { folder = path }
+                                }
+                            } label: { Label(folder.isEmpty ? "All folders" : folder, systemImage: "folder") }
+                            Spacer()
+                            Button("Play all") { player.playAll(items) }.disabled(items.isEmpty)
+                        }
                     }
                 }
             }
-            .listStyle(.plain).scrollContentBackground(.hidden).background(HopperTheme.background)
+            .listStyle(.plain).scrollContentBackground(.hidden).hopperScene()
             .navigationTitle("hopper.").navigationBarTitleDisplayMode(.inline)
             .searchable(text: $search, prompt: "Find something good")
             .refreshable { await client.refresh(sync: true) }
@@ -102,7 +117,6 @@ struct LibraryView: View {
                 ToolbarItem(placement: .navigationBarLeading) {
                     Menu {
                         Picker("Collection", selection: $filter) { Text("Everything").tag("all"); Text("Continue listening").tag("continue"); Text("Audiobooks").tag("audiobook"); Text("Audio").tag("audio"); Text("Video").tag("video") }
-                        Picker("Folder", selection: $folder) { Text("All folders").tag(""); ForEach(Array(Set(client.library.items.map(\.folder).filter { !$0.isEmpty })).sorted(), id: \.self) { Text($0).tag($0) } }
                     } label: { Image(systemName: "line.3.horizontal.decrease") }.accessibilityLabel("Filter library")
                 }
                 ToolbarItem(placement: .navigationBarTrailing) { Button { importing = true } label: { Image(systemName: "plus") }.disabled(!client.ready).accessibilityLabel("Add media") }

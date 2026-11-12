@@ -1,12 +1,17 @@
+import { pairDevices } from './pairing.js';
+import { sharedFolders } from './folders.js';
 import { homePicker, deliveryList } from './home.js';
 import { api, escape as esc, time, duration, tone, initials } from './api.js';
 import { Player } from './player.js';
 import { Podcasts } from './podcasts.js';
+import { Glass } from './glass.js';
 
 const $ = id => document.getElementById(id);
 let library = { items: [], peers: [], queue: { items: [] } }, view = 'all', folder = '', query = '', toastTimer;
 const player = new Player(renderQueue, message => toast(message, true));
 const podcasts = new Podcasts({ dialog, toast, load, player });
+const glass = new Glass();
+$('appearance').onclick = () => glass.settings(dialog);
 const names = { all: ['In the hopper', 'A home for everything you want to hear. And see.', 'All media'], continue: ['Pick up the thread', 'Right where you left off. Wherever you are.', 'Continue listening'], audiobook: ['Another chapter', 'Long stories. A little time for yourself.', 'Audiobooks'], audio: ['Good company', 'The voices, sounds, and songs you keep coming back to.', 'Audio'], video: ['Worth a watch', 'A little something for the bigger picture.', 'Video'], folders: ['Just as you left it', 'Your folders, across the devices you call home.', 'Folders'] };
 
 function toast(message, error = false) { clearTimeout(toastTimer); $('toast').textContent = message; $('toast').classList.toggle('error', error); $('toast').hidden = false; toastTimer = setTimeout(() => { $('toast').hidden = true; }, error ? 10000 : 4500); }
@@ -40,7 +45,7 @@ function render() {
   $('section-label').innerHTML = `${folder ? esc(folder) : 'Your collection'} <span>${items.length} item${items.length === 1 ? '' : 's'}</span>`;
   $('play-all').disabled = !items.length;
   $('folder-list').hidden = view !== 'folders';
-  if (view === 'folders') $('folder-list').innerHTML = `<button class="folder-chip ${!folder ? 'selected' : ''}" data-folder="">All folders</button>` + [...new Set(library.items.map(i => i.folder).filter(Boolean))].sort().map(f => `<button class="folder-chip ${folder === f ? 'selected' : ''}" data-folder="${esc(f)}">▱ ${esc(f)}</button>`).join('');
+  if (view === 'folders') $('folder-list').innerHTML = '<button class="secondary" data-shared-folders>Manage shared folders</button>' + `<button class="folder-chip ${!folder ? 'selected' : ''}" data-folder="">All folders</button>` + [...new Set(library.items.map(i => i.folder).filter(Boolean))].sort().map(f => `<button class="folder-chip ${folder === f ? 'selected' : ''}" data-folder="${esc(f)}">▱ ${esc(f)}</button>`).join('');
   if (!items.length) {
     $('collection').innerHTML = !library.items.length ? `<div class="empty-state"><div class="empty-illustration"><div class="record"></div><div class="book">h.</div><div class="hopper-bin">↓</div></div><h2>Good things go in here.</h2><p>Drop in a few favorite tracks, a long audiobook,<br>or the next episode you can’t wait to hear.</p><button class="primary" data-add>＋ Add your first files</button><small>MP3, M4B, FLAC, WAV, MP4 & more</small><button class="text-button" data-pair>Already have a hopper? Pair a device ↗</button></div>` : '<div class="empty-filter"><span>⌕</span><h2>A little quiet in here.</h2><p>Try a different search or collection.</p></div>';
   } else {
@@ -58,7 +63,7 @@ function renderQueue() {
 }
 function dialog(title, body) { $('dialog-title').textContent = title; $('dialog-body').innerHTML = body; if (!$('dialog').open) $('dialog').showModal(); }
 function addDialog() {
-  dialog('Put something in the hopper', `<p class="dialog-lead">A file, a folder, a whole afternoon of listening.</p><button id="choose-files" class="import-choice"><span>♫</span><div><strong>Choose media files</strong><small>Copy audio, audiobooks, or video into Hopper</small></div>↗</button><button id="choose-folder" class="import-choice"><span>▱</span><div><strong>Choose a folder</strong><small>Keep its folder structure in your library</small></div>↗</button><details><summary>Or reference a folder on this desktop</summary><p class="hint">With this desktop as Home, files stay where they are. With a remote Home, Hopper makes a copy to send.</p><form id="import-path"><input name="path" placeholder="Full path to a file or folder" required><button class="primary">Add folder</button></form></details>`);
+  dialog('Put something in the hopper', `<p class="dialog-lead">A file, a folder, a whole afternoon of listening.</p><button data-shared-folders class="import-choice"><span>▱</span><div><strong>Share a desktop folder</strong><small>Stream its media in place from paired devices</small></div>↗</button><button id="choose-files" class="import-choice"><span>♫</span><div><strong>Choose media files</strong><small>Copy audio, audiobooks, or video into Hopper</small></div>↗</button><button id="choose-folder" class="import-choice"><span>▱</span><div><strong>Choose a folder</strong><small>Keep its folder structure in your library</small></div>↗</button><details><summary>Or reference a folder on this desktop</summary><p class="hint">With this desktop as Home, files stay where they are. With a remote Home, Hopper makes a copy to send.</p><form id="import-path"><input name="path" placeholder="Full path to a file or folder" required><button class="primary">Add folder</button></form></details>`);
   $('choose-files').onclick = () => $('file-input').click(); $('choose-folder').onclick = () => $('folder-input').click();
   const podcastButton = document.createElement('button'); podcastButton.className = 'import-choice'; podcastButton.textContent = '◉ Subscribe to a podcast ↗'; podcastButton.onclick = () => { view = 'podcasts'; render(); podcasts.subscribe(); }; $('dialog-body').prepend(podcastButton);
   $('import-path').onsubmit = async e => { e.preventDefault(); const button = e.target.querySelector('button'); button.disabled = true; button.textContent = 'Reading your collection…'; try { const r = await api('import', { paths: [new FormData(e.target).get('path')] }); imported(r); } catch (e) { toast(e.message, true); } finally { button.disabled = false; button.textContent = 'Add folder'; } };
@@ -70,11 +75,8 @@ async function upload(files) {
   toast(`Putting ${files.length} file${files.length === 1 ? '' : 's'} in the hopper…`); clearTimeout(toastTimer);
   try { imported(await api('upload', body)); } catch (e) { toast(e.message, true); }
 }
-function pairDialog() {
-  dialog('Bring your devices together', `<p class="dialog-lead">Pair your iPhone, Mac, or Linux and Windows desktops. Each device can share its own collection.</p><div class="pair-section"><h3>Add another device</h3><p>Make a one-time invitation here, then paste it into Hopper on the other device.</p><button id="make-invite" class="primary">Create invitation</button><div id="invitation"></div></div><div class="pair-section"><h3>Have an invitation?</h3><form id="pair-form"><textarea name="code" placeholder="Paste hopper1:…" rows="3" required aria-label="Pairing invitation"></textarea><button class="secondary">Pair this device</button></form></div><p class="hint">Pairing shares your Hopper library and listening progress with that device. Pair directly with each desktop you want to access.</p>`);
-  $('make-invite').onclick = async e => { e.target.disabled = true; try { const result = await api('invite', {}); $('invitation').innerHTML = `<textarea readonly rows="4" aria-label="Your invitation">${esc(result.code)}</textarea><small>Expires in 10 minutes · works once</small><button id="copy-invite" class="secondary">Copy invitation</button>`; $('copy-invite').onclick = async () => { try { await navigator.clipboard.writeText(result.code); toast('Invitation copied'); } catch { $('invitation').querySelector('textarea').select(); } }; } catch (e) { toast(e.message, true); } finally { e.target.disabled = false; } };
-  $('pair-form').onsubmit = async e => { e.preventDefault(); const button = e.target.querySelector('button'); button.disabled = true; button.textContent = 'Finding your device…'; try { await api('pair', { code: new FormData(e.target).get('code') }); $('dialog').close(); await load(); toast('Your devices are paired'); } catch (e) { toast(e.message, true); } finally { button.disabled = false; button.textContent = 'Pair this device'; } };
-}
+function pairDialog() { pairDevices(dialog, toast, load); }
+function openSharedFolders() { sharedFolders(dialog, toast, load).catch(error => toast(error.message, true)); }
 function devicesDialog() {
   dialog('Your devices', homePicker(library) + deliveryList(library) + `<p class="dialog-lead">One collection, wherever you put it.</p><div class="device-card"><span class="live-dot"></span><div><strong>${esc(library.device?.name)}</strong><small>This device</small></div></div>` + library.peers.map(p => `<div class="device-card"><span class="${p.online ? 'live-dot' : 'offline-dot'}"></span><div><strong>${esc(p.name)}</strong><small>${p.online ? 'Connected' : esc(p.error || 'Not connected yet')}</small></div><button class="text-button" data-unpair="${p.id}">Unpair</button></div>`).join('') + '<button class="primary" data-pair>＋ Pair a device</button><p class="hint">Keep a desktop running to stream from it. Download a copy to listen when it is offline.</p>');
   document.getElementById('home-device').onchange = async event => { try { await api('home', { device_id: event.target.value }); await load(); toast('Home desktop saved'); } catch (e) { toast(e.message, true); } };
@@ -97,6 +99,7 @@ document.addEventListener('click', async e => {
   if ('folder' in d) { folder = d.folder; render(); }
   if ('add' in d) addDialog();
   if ('pair' in d) pairDialog();
+  if ('sharedFolders' in d) openSharedFolders();
   if (d.keep) { target.disabled = true; target.textContent = 'Downloading…'; try { await api(`keep/${d.keep}`, {}); toast('Ready to listen offline'); await load(); detail(d.keep); } catch (e) { toast(e.message, true); target.disabled = false; target.textContent = '↓ Keep on this device'; } }
   if (d.unpair && confirm('Unpair this device? Downloaded copies will stay available.')) { try { await api(`peers/${d.unpair}`, undefined, 'DELETE'); await load(); devicesDialog(); } catch (e) { toast(e.message, true); } }
   if ('chapter' in d) { if (player.current !== d.item || !player.media.src) await player.play(d.item); player.seek(Number(d.chapter)); }

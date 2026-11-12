@@ -9,7 +9,7 @@ struct QueueView: View {
                 if player.queuedItems.isEmpty { VStack(spacing: 15) { Image(systemName: "text.line.first.and.arrowtriangle.forward").font(.largeTitle); Text("A little room for more.").font(.system(size: 24, design: .serif)); Text("Add a few things from your library.\nWe’ll keep them moving.").font(.subheadline).multilineTextAlignment(.center) }.foregroundColor(HopperTheme.muted).frame(maxWidth: .infinity).padding(.vertical, 80).listRowBackground(HopperTheme.background).listRowSeparator(.hidden) }
                 ForEach(player.queuedItems) { item in Button { Task { await player.play(item) } } label: { HStack { if item.id == player.currentId { Image(systemName: "waveform").foregroundColor(HopperTheme.forest) }; MediaRow(item: item) } }.buttonStyle(.plain).listRowBackground(HopperTheme.background) }
                     .onDelete { player.remove(at: $0) }.onMove { player.move(from: $0, to: $1) }
-            }.listStyle(.plain).scrollContentBackground(.hidden).background(HopperTheme.background).navigationTitle("Up next").toolbar { EditButton() }
+            }.listStyle(.plain).scrollContentBackground(.hidden).hopperScene().navigationTitle("Up next").toolbar { EditButton() }
         }
     }
 }
@@ -23,7 +23,7 @@ struct MiniPlayer: View {
                 Button(action: open) { HStack(spacing: 12) { MediaArt(item: item, size: 40); VStack(alignment: .leading, spacing: 4) { Text(item.title).font(.subheadline.weight(.semibold)).lineLimit(1); Text(player.loading ? "Connecting…" : item.subtitle).font(.caption).foregroundColor(HopperTheme.muted).lineLimit(1) }; Spacer() } }.buttonStyle(.plain)
                 Button { player.toggle() } label: { Image(systemName: player.playing ? "pause.fill" : "play.fill").font(.title3).frame(width: 40, height: 40) }.accessibilityLabel(player.playing ? "Pause" : "Play")
                 Button { player.next() } label: { Image(systemName: "forward.end.fill").frame(width: 30, height: 40) }.accessibilityLabel("Next item")
-            }.padding(.horizontal, 17).padding(.vertical, 9).background(HopperTheme.surface)
+            }.padding(.horizontal, 17).padding(.vertical, 9).hopperGlass()
         }
     }
 }
@@ -49,12 +49,12 @@ struct PlayerView: View {
                         HStack(spacing: 30) {
                             Button { player.next(-1) } label: { Image(systemName: "backward.end.fill").font(.title3) }.accessibilityLabel("Previous item")
                             Button { player.skip(-15) } label: { Image(systemName: "gobackward.15").font(.title) }.accessibilityLabel("Back 15 seconds")
-                            Button { player.toggle() } label: { Image(systemName: player.playing ? "pause.fill" : "play.fill").font(.title).frame(width: 68, height: 68).foregroundColor(.white).background(HopperTheme.forest).clipShape(Circle()) }.accessibilityLabel(player.playing ? "Pause" : "Play")
+                            Button { player.toggle() } label: { Image(systemName: player.playing ? "pause.fill" : "play.fill").font(.title).frame(width: 68, height: 68).foregroundColor(.white).background(HopperTheme.accent).clipShape(Circle()) }.accessibilityLabel(player.playing ? "Pause" : "Play")
                             Button { player.skip(30) } label: { Image(systemName: "goforward.30").font(.title) }.accessibilityLabel("Forward 30 seconds")
                             Button { player.next() } label: { Image(systemName: "forward.end.fill").font(.title3) }.accessibilityLabel("Next item")
                         }
                         HStack {
-                            Menu { ForEach([Float(0.75), 1, 1.25, 1.5, 1.75, 2], id: \.self) { speed in Button("\(speed.formatted())×") { player.rate = speed } } } label: { Text("\(player.rate.formatted())×").font(.subheadline.weight(.semibold)).padding(10).background(HopperTheme.surface).cornerRadius(8) }
+                            Menu { ForEach([Float(0.75), 1, 1.25, 1.5, 1.75, 2], id: \.self) { speed in Button("\(speed.formatted())×") { player.rate = speed } } } label: { Text("\(player.rate.formatted())×").font(.subheadline.weight(.semibold)).padding(10).hopperGlass(radius: 8) }
                             Spacer(); Text(item.isLocal ? "ON THIS DEVICE" : "STREAMING FROM YOUR DEVICES").font(.system(size: 9)).tracking(1).foregroundColor(HopperTheme.muted)
                         }
                         if !item.chapters.isEmpty {
@@ -62,7 +62,7 @@ struct PlayerView: View {
                         }
                     }.padding(.horizontal, 26).padding(.bottom, 40)
                 }
-            }.background(HopperTheme.background).toolbar { ToolbarItem(placement: .navigationBarLeading) { Button { dismiss() } label: { Image(systemName: "chevron.down") }.accessibilityLabel("Close player") }; ToolbarItem(placement: .principal) { Text("hopper.").font(.system(size: 21, weight: .semibold, design: .serif)) } }
+            }.hopperScene().toolbar { ToolbarItem(placement: .navigationBarLeading) { Button { dismiss() } label: { Image(systemName: "chevron.down") }.accessibilityLabel("Close player") }; ToolbarItem(placement: .principal) { Text("hopper.").font(.system(size: 21, weight: .semibold, design: .serif)) } }
         }
     }
 }

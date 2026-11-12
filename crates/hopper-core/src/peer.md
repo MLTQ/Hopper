@@ -25,3 +25,5 @@ Explicit pair trust, cached catalogue/progress exchange, and streaming over Iroh
 Revocation closes the cached connection after removing trust; guard checks are Clippy-clean.
 
 Paired Deliver requests dispatch to desktop Home intake. Only IDs published in the sender catalogue can trigger verified copies; local executable/credential configuration remains inaccessible.
+
+Peer reads resolve an advertised ID to an available local import or registered shared-folder file. Only logical folder names appear in snapshots.
