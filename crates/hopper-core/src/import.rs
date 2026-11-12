@@ -45,6 +45,32 @@ pub fn available(local: &LocalMedia) -> bool {
     })
 }
 
+// A second import of the same bytes can reference the already published blob.
+// Replacing it would change its mtime and invalidate other sources for this ID.
+pub(crate) async fn persist_managed(
+    temp: tempfile::NamedTempFile,
+    dest: &Path,
+    id: &str,
+) -> Result<()> {
+    match temp.persist_noclobber(dest) {
+        Ok(_) => Ok(()),
+        Err(error) if error.error.kind() == std::io::ErrorKind::AlreadyExists => {
+            let dest = dest.to_owned();
+            let id = id.to_owned();
+            tokio::task::spawn_blocking(move || {
+                let mut hasher = blake3::Hasher::new();
+                hasher.update_reader(File::open(&dest)?)?;
+                if hasher.finalize().to_hex().as_str() != id {
+                    error.file.persist(dest)?;
+                }
+                Ok(())
+            })
+            .await?
+        }
+        Err(error) => Err(error.into()),
+    }
+}
+
 pub fn inspect(path: &Path, filename: &str, folder: &str, managed: bool) -> Result<LocalMedia> {
     let (mime, kind) = format(Path::new(filename)).context("unsupported media extension")?;
     let path = path.canonicalize()?;
@@ -165,6 +191,12 @@ pub fn import_paths(store: &Store, paths: &[PathBuf]) -> ImportReport {
             report.errors.push(format!("{}: not found", root.display()));
             continue;
         }
+        let import_folder = root.is_dir().then(|| {
+            root.canonicalize()
+                .unwrap_or_else(|_| root.clone())
+                .to_string_lossy()
+                .into_owned()
+        });
         let base = root.parent().unwrap_or(root);
         for entry in walkdir::WalkDir::new(root)
             .follow_links(false)
@@ -193,7 +225,7 @@ pub fn import_paths(store: &Store, paths: &[PathBuf]) -> ImportReport {
                 .to_string_lossy()
                 .replace('\\', "/");
             match inspect(entry.path(), &filename, &folder, false).and_then(|m| {
-                store.put("local", &m.media.id, &m)?;
+                store.put_import(import_folder.as_deref(), &m)?;
                 Ok(m.media.id)
             }) {
                 Ok(id) => {

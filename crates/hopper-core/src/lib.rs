@@ -91,6 +91,7 @@ struct Inner {
     connections: tokio::sync::Mutex<HashMap<iroh::EndpointId, iroh::endpoint::Connection>>,
     refreshing: tokio::sync::Mutex<()>,
     downloads: tokio::sync::Mutex<()>,
+    imports: tokio::sync::Mutex<()>,
     shutdown: tokio_util::sync::CancellationToken,
     podcast_commands: tokio::sync::Mutex<()>,
     podcast_downloads: tokio::sync::Mutex<()>,
@@ -183,6 +184,7 @@ impl Node {
             connections: Default::default(),
             refreshing: Default::default(),
             downloads: Default::default(),
+            imports: Default::default(),
             shutdown: Default::default(),
             podcast_commands: Default::default(),
             podcast_downloads: Default::default(),
@@ -332,6 +334,7 @@ impl Node {
     }
 
     pub async fn import(&self, paths: Vec<PathBuf>) -> Result<ImportReport> {
+        let _guard = self.0.imports.lock().await;
         let node = self.clone();
         let mut report =
             tokio::task::spawn_blocking(move || import::import_paths(&node.0.store, &paths))

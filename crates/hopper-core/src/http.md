@@ -23,3 +23,5 @@ The loopback UI also serves material.css, glass.js and glass-lens.js through the
 These are presentation-only assets; no appearance preferences or backdrop pixels enter the API.
 
 The authenticated folder routes manage local registrations and invoke a picker supplied by the desktop shell. The QR route renders a one-use invitation locally. The pairing and folder UI modules are bundled assets.
+
+GET /api/folders includes imported roots. DELETE /api/imported-folders/:id removes one local import group. Multipart folder names come from the browser’s relative filename.

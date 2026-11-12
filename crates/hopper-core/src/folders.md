@@ -6,3 +6,5 @@ Periodic and manual scans serialize with add/remove, reuse unchanged hashes, ski
 Hopper's private data, and publish each complete index atomically. Peer snapshots and media reads
 resolve indexed content IDs only. Original paths never enter snapshots. Unsharing removes only
 the selected registration; independent copies and other shared roots remain available.
+
+Source lookup includes one-time imported folders. Identical content remains playable from an available independent file, another import or a registered share.

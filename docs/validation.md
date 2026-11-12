@@ -136,3 +136,10 @@ accessibility walkthroughs are tracked in hopper-tqd; existing platform/device r
   The installed launcher applies this setting on this machine.
 - Pair redemption, imports, media playback and codec coverage on Linux remain open in
   `hopper-lky.6`, along with Windows validation and distributable installers.
+
+## Desktop folder removal — November 12, 2026
+
+- All 15 Rust core tests passed on Linux. Regressions cover upgrading older reference and copied folder imports, pending Home deliveries across restart, authenticated removal, overlapping shares and independent reference roots with identical names and media.
+- Headless Chromium drove the Folders view against a real, isolated Hopper node. An empty share, a nested reference import and two folder uploads appeared with their counts. Cancel preserved the entry. After removing overlapping entries, the remaining copy served the original bytes. Removing the final entry persisted across reload and preserved the source file.
+- The existing Chromium UI checks, JavaScript material tests, Rust formatting and core Clippy checks passed. Other desktop operating systems and iOS were not exercised for this change.
+- Installed the rebuilt release through the existing per-user launcher. Opened Folders in native WebKitGTK and verified the Remove action on the upgraded library. All removal tests used temporary media.

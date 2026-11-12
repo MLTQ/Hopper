@@ -14,3 +14,5 @@ Reference local media without modifying it, hash identity, and extract optional 
 Desktop FFmpeg tools resolve through media_tools, including standard macOS Homebrew locations.
 
 Import reports include successful item IDs so local API callers can queue verified Home deliveries.
+
+Recursive path imports record the selected root separately from each item’s logical folder. Publishing verified managed bytes reuses an identical existing blob so other source records retain their modification timestamp.

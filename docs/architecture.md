@@ -82,3 +82,5 @@ Full Podcasting 2.0 support, cleaned RSS publishing, transcript/vector search, a
 replication and richer codec conversion remain tracked product work. Real inference accuracy
 and third-party client integrations require evaluation separately from deterministic contract tests.
 Cross-platform source/build workflows do not substitute for actual Windows/Linux/device testing.
+
+One-time desktop folder imports have separate local source memberships, keyed by the referenced root path or the browser-supplied top-level name. Removing a membership changes the local catalogue and keeps the physical files. Shared roots, other imports, offline copies and peer sources can continue providing the same content ID.

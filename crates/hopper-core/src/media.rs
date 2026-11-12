@@ -177,7 +177,7 @@ impl Node {
             "invalid media extension"
         );
         let path = self.0.dir.join("media").join(format!("{id}.{ext}"));
-        temp.persist(&path)?;
+        import::persist_managed(temp, &path, id).await?;
         let modified = import::modified(&std::fs::metadata(&path)?);
         self.0.store.put(
             "local",

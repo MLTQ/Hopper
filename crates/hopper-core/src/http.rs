@@ -45,6 +45,7 @@ pub(crate) async fn serve(node: Node) -> Result<u16> {
         .route("/folders/choose", post(choose_folder))
         .route("/folders/:id", delete(stop_sharing))
         .route("/folders/:id/rescan", post(rescan_folder))
+        .route("/imported-folders/:id", delete(remove_imported_folder))
         .route("/pair", post(pair))
         .route("/peers/:id", delete(unpair))
         .route("/import", post(import_paths))
@@ -272,7 +273,7 @@ async fn refresh(State(node): State<Node>) -> Api<Library> {
 }
 async fn folders(State(node): State<Node>) -> Api<Value> {
     Ok(Json(
-        json!({"folders": node.shared_folders(), "can_choose": node.0.folders.picker.get().is_some()}),
+        json!({"folders": node.shared_folders(), "imports": node.0.store.imported_folders()?, "can_choose": node.0.folders.picker.get().is_some()}),
     ))
 }
 #[derive(Deserialize)]
@@ -306,6 +307,12 @@ async fn rescan_folder(
 }
 async fn stop_sharing(State(node): State<Node>, Path(id): Path<String>) -> Api<Value> {
     node.stop_sharing_folder(id).await?;
+    Ok(Json(json!({"ok":true})))
+}
+
+async fn remove_imported_folder(State(node): State<Node>, Path(id): Path<String>) -> Api<Value> {
+    let _guard = node.0.imports.lock().await;
+    node.0.store.remove_imported_folder(&id)?;
     Ok(Json(json!({"ok":true})))
 }
 
@@ -383,6 +390,7 @@ async fn keep(State(node): State<Node>, Path(id): Path<String>) -> Api<Value> {
 }
 
 async fn upload(State(node): State<Node>, mut multipart: Multipart) -> Api<ImportReport> {
+    let _guard = node.0.imports.lock().await;
     let mut report = ImportReport::default();
     while let Some(mut field) = multipart.next_field().await? {
         let filename = field.file_name().unwrap_or("media").to_owned();
@@ -415,10 +423,16 @@ async fn upload(State(node): State<Node>, mut multipart: Multipart) -> Api<Impor
             .dir
             .join("media")
             .join(format!("{}.{}", local.media.id, ext));
-        temp.persist(&dest)?;
+        import::persist_managed(temp, &dest, &local.media.id).await?;
         local.path = dest;
         local.modified = import::modified(&std::fs::metadata(&local.path)?);
-        node.0.store.put("local", &local.media.id, &local)?;
+        let root = local
+            .media
+            .folder
+            .split('/')
+            .next()
+            .filter(|s| !s.is_empty());
+        node.0.store.put_import(root, &local)?;
         report.item_ids.push(local.media.id);
         report.added += 1;
     }

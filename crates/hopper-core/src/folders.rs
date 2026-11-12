@@ -225,6 +225,9 @@ impl Node {
         {
             return Ok(Some(file));
         }
+        if let Some((_, file)) = self.0.store.imported_file(id)? {
+            return Ok(Some(file));
+        }
         Ok(self
             .0
             .folders
@@ -245,6 +248,11 @@ impl Node {
             .into_iter()
             .map(|f| (f.media.id.clone(), f))
             .collect();
+        for file in self.0.store.imported_files()? {
+            if !files.get(&file.media.id).is_some_and(import::available) {
+                files.insert(file.media.id.clone(), file);
+            }
+        }
         for root in self.0.folders.roots.read().unwrap().values() {
             for (id, file) in &root.files {
                 if !files.get(id).is_some_and(import::available) && accessible(file) {

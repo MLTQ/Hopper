@@ -16,3 +16,5 @@ reported. All cut/agent policy stays with the show owner. Playback queues remain
 Receiver completion additionally stages any pre-existing referenced local replica, ensuring the
 Home receipt denotes a managed copy. Boxed receipt futures break the bidirectional transport
 future-type cycle while retaining Send for per-stream tasks.
+
+Staging a file from a one-time folder import preserves its membership. Removing the folder during delivery keeps the staged bytes available for Home until outstanding receipts arrive.

@@ -39,8 +39,10 @@ external-agent integration and current limits. No paid model or API key is selec
 
 Identical file bytes merge into one library item with multiple available sources. Your source
 files are preserved. Shared folders retain their names and subfolders on paired devices. Hopper
-checks them when the desktop starts and every minute while it runs. The desktop’s Folders view
-has controls to rescan or stop sharing. A one-time import remains a separate action.
+checks them when the desktop starts and every minute while it runs. Open **Folders → Added folders** to see this desktop’s shared folders and one-time
+folder imports. Choose **Remove** on a row and confirm. Removing a shared folder stops its scans.
+Removing an import drops its items from that folder in the library. Other sources and files on
+disk are preserved.
 
 ## Run a desktop
 

@@ -15,3 +15,5 @@ Shared glass, adaptive ink and appearance colors live in material.css. This file
 of truth for spacing, radii, typography and responsive geometry.
 
 The pairing code has a white background, square aspect and responsive width so the phone camera can read the complete quiet zone.
+
+Added-folder rows wrap long paths and keep their Remove control visible.

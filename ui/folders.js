@@ -35,3 +35,59 @@ export async function sharedFolders(dialog, toast, load) {
     button.onclick = () => run('Removing shared folder…', () => api(`folders/${button.dataset.stopRoot}`, undefined, 'DELETE'));
   });
 }
+
+export function addedFolders(panel, dialog, toast, load) {
+  let revision = 0;
+  let rows = [];
+  let lastMarkup;
+
+  async function refresh() {
+    const request = ++revision;
+    if (!panel.hasChildNodes()) panel.textContent = 'Loading folders…';
+    try {
+      const { folders, imports } = await api('folders');
+      if (request !== revision) return;
+      rows = [
+        ...folders.map(folder => ({ ...folder, label: folder.path, shared: true })),
+        ...imports.map(folder => ({ ...folder, label: folder.name, shared: false })),
+      ].sort((a, b) => a.label.localeCompare(b.label));
+      const markup = rows.length ? '<ul>' + rows.map((row, index) => {
+        const count = row.files === 1 ? '1 item' : `${row.files} items`;
+        return `<li><div><strong>${esc(row.label)}</strong><small>${row.shared ? 'Shared' : 'Imported'} · ${count}${row.warning ? ' · ' + esc(row.warning) : ''}</small></div>
+          <button class="secondary" data-remove-folder="${index}" aria-label="Remove ${row.shared ? 'shared' : 'imported'} folder ${esc(row.label)}">Remove</button></li>`;
+      }).join('') + '</ul>' : '<p>No folders added on this desktop.</p>';
+      if (markup !== lastMarkup) panel.innerHTML = markup;
+      lastMarkup = markup;
+    } catch (error) {
+      if (request !== revision) return;
+      lastMarkup = undefined;
+      panel.innerHTML = `<p>${esc(error.message)} <button class="text-button" data-retry-folders>Retry</button></p>`;
+    }
+  }
+
+  panel.addEventListener('click', event => {
+    if (event.target.closest('[data-retry-folders]')) { refresh(); return; }
+    const button = event.target.closest('[data-remove-folder]');
+    if (!button) return;
+    const row = rows[Number(button.dataset.removeFolder)];
+    const effect = row.shared ? 'Hopper will stop scanning and sharing this folder.'
+      : 'Hopper will remove this folder’s imported items from this desktop’s library.';
+    dialog('Remove folder?', `<p class="folder-path"><strong>${esc(row.label)}</strong></p><p>${effect} Your files stay on disk. Items with another source remain available.</p>
+      <div class="detail-actions"><button class="secondary" id="cancel-folder">Cancel</button><button class="primary" id="remove-folder">Remove folder</button></div>`);
+    const modal = document.getElementById('dialog');
+    document.getElementById('cancel-folder').onclick = () => modal.close();
+    document.getElementById('cancel-folder').focus();
+    const remove = document.getElementById('remove-folder');
+    remove.onclick = async () => {
+      remove.disabled = true;
+      try {
+        await api(`${row.shared ? 'folders' : 'imported-folders'}/${encodeURIComponent(row.id)}`, undefined, 'DELETE');
+        if (remove.isConnected) modal.close();
+        await load();
+        toast('Folder removed');
+      } catch (error) { toast(error.message, true); }
+      finally { remove.disabled = false; }
+    };
+  });
+  return refresh;
+}

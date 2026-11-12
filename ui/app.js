@@ -1,5 +1,5 @@
 import { pairDevices } from './pairing.js';
-import { sharedFolders } from './folders.js';
+import { addedFolders, sharedFolders } from './folders.js';
 import { homePicker, deliveryList } from './home.js';
 import { api, escape as esc, time, duration, tone, initials } from './api.js';
 import { Player } from './player.js';
@@ -10,6 +10,7 @@ const $ = id => document.getElementById(id);
 let library = { items: [], peers: [], queue: { items: [] } }, view = 'all', folder = '', query = '', toastTimer;
 const player = new Player(renderQueue, message => toast(message, true));
 const podcasts = new Podcasts({ dialog, toast, load, player });
+const refreshAddedFolders = addedFolders($('added-folder-rows'), dialog, toast, load);
 const glass = new Glass();
 $('appearance').onclick = () => glass.settings(dialog);
 const names = { all: ['In the hopper', 'A home for everything you want to hear. And see.', 'All media'], continue: ['Pick up the thread', 'Right where you left off. Wherever you are.', 'Continue listening'], audiobook: ['Another chapter', 'Long stories. A little time for yourself.', 'Audiobooks'], audio: ['Good company', 'The voices, sounds, and songs you keep coming back to.', 'Audio'], video: ['Worth a watch', 'A little something for the bigger picture.', 'Video'], folders: ['Just as you left it', 'Your folders, across the devices you call home.', 'Folders'] };
@@ -25,6 +26,7 @@ function filtered() {
 async function load(sync = false) {
   try { library = await api(sync ? 'refresh' : 'library', sync ? {} : undefined); player.update(library); render(); }
   catch (e) { toast(e.message, true); }
+  if (view === 'folders') await refreshAddedFolders();
 }
 function render() {
   podcasts.library = library;
@@ -36,16 +38,18 @@ function render() {
   const [title, description, crumb] = view === 'podcasts' ? ['Good company', 'Your shows. Your listening ritual.', 'Podcasts'] : names[view];
   $('view-title').innerHTML = `${esc(title)}<span>.</span>`; $('view-description').textContent = description; $('crumb').textContent = crumb;
   document.querySelectorAll('[data-view]').forEach(el => el.classList.toggle('active', el.dataset.view === view));
+  $('added-folders').hidden = view !== 'folders';
   $('play-all').hidden = view === 'podcasts';
   if (view === 'podcasts') { $('continue-card').hidden = true; podcasts.render(library, query); renderQueue(); return; }
   const resume = library.items.filter(i => i.progress?.position > 0 && !i.progress.completed).sort((a, b) => (b.progress.updated_at || 0) - (a.progress.updated_at || 0))[0];
   $('continue-card').hidden = !resume || view !== 'all' || Boolean(query);
   if (resume) $('continue-card').innerHTML = `${art(resume, 'hero-art')}<div class="continue-copy"><div class="eyebrow">RIGHT WHERE YOU LEFT OFF</div><h2>${esc(resume.title)}</h2><p>${esc(resume.creator || resume.folder || 'Your collection')} <span>·</span> ${time(resume.progress.position)} in</p><progress max="${resume.duration || 1}" value="${resume.progress.position}"></progress></div><button class="round-play" data-play="${resume.id}" aria-label="Resume ${esc(resume.title)}">▶</button>`;
+  if (folder && !library.items.some(item => item.folder === folder)) folder = '';
   const items = filtered();
   $('section-label').innerHTML = `${folder ? esc(folder) : 'Your collection'} <span>${items.length} item${items.length === 1 ? '' : 's'}</span>`;
   $('play-all').disabled = !items.length;
   $('folder-list').hidden = view !== 'folders';
-  if (view === 'folders') $('folder-list').innerHTML = '<button class="secondary" data-shared-folders>Manage shared folders</button>' + `<button class="folder-chip ${!folder ? 'selected' : ''}" data-folder="">All folders</button>` + [...new Set(library.items.map(i => i.folder).filter(Boolean))].sort().map(f => `<button class="folder-chip ${folder === f ? 'selected' : ''}" data-folder="${esc(f)}">▱ ${esc(f)}</button>`).join('');
+  if (view === 'folders') $('folder-list').innerHTML = `<button class="folder-chip ${!folder ? 'selected' : ''}" data-folder="">All folders</button>` + [...new Set(library.items.map(i => i.folder).filter(Boolean))].sort().map(f => `<button class="folder-chip ${folder === f ? 'selected' : ''}" data-folder="${esc(f)}">▱ ${esc(f)}</button>`).join('');
   if (!items.length) {
     $('collection').innerHTML = !library.items.length ? `<div class="empty-state"><div class="empty-illustration"><div class="record"></div><div class="book">h.</div><div class="hopper-bin">↓</div></div><h2>Good things go in here.</h2><p>Drop in a few favorite tracks, a long audiobook,<br>or the next episode you can’t wait to hear.</p><button class="primary" data-add>＋ Add your first files</button><small>MP3, M4B, FLAC, WAV, MP4 & more</small><button class="text-button" data-pair>Already have a hopper? Pair a device ↗</button></div>` : '<div class="empty-filter"><span>⌕</span><h2>A little quiet in here.</h2><p>Try a different search or collection.</p></div>';
   } else {
@@ -95,7 +99,7 @@ document.addEventListener('click', async e => {
   if (d.detail) detail(d.detail);
   if (d.up) player.move(d.up, -1);
   if (d.remove) player.remove(d.remove);
-  if (d.view) { view = d.view; folder = ''; render(); }
+  if (d.view) { view = d.view; folder = ''; render(); if (view === 'folders') await refreshAddedFolders(); }
   if ('folder' in d) { folder = d.folder; render(); }
   if ('add' in d) addDialog();
   if ('pair' in d) pairDialog();

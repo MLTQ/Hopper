@@ -24,6 +24,10 @@
     <header class="topbar"><div class="breadcrumb">YOUR LIBRARY <span>/</span> <strong id="crumb">All media</strong></div><div class="top-actions"><button id="refresh" class="icon-button" title="Refresh paired libraries" aria-label="Refresh paired libraries">↻</button><button id="appearance" class="avatar" title="Appearance" aria-label="Appearance settings">H</button></div></header>
     <section class="intro"><div><div class="eyebrow accent">GOOD THINGS, LINED UP.</div><h1 id="view-title">In the hopper<span>.</span></h1><p id="view-description">A home for everything you want to hear. And see.</p></div><button id="add" class="primary">＋ Put something in</button></section>
     <section id="continue-card" class="continue-card" hidden></section>
+    <section id="added-folders" aria-labelledby="added-folders-heading" hidden>
+      <header><h2 id="added-folders-heading">Added folders</h2><button class="secondary" data-shared-folders>Share a folder…</button></header>
+      <div id="added-folder-rows" aria-live="polite"></div>
+    </section>
     <section class="library-section">
       <div class="library-toolbar"><div class="section-label" id="section-label">Your collection <span>0 items</span></div><label class="search"><span>⌕</span><input id="search" type="search" placeholder="Find something good…" aria-label="Search your media"></label><button id="play-all" class="secondary">▶ Play all</button></div>
       <div id="folder-list" class="folders" hidden></div>

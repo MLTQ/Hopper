@@ -397,7 +397,7 @@ impl Node {
             .dir
             .join("media")
             .join(format!("{}.{}", local.media.id, ext));
-        temp.persist(&dest)?;
+        crate::import::persist_managed(temp, &dest, &local.media.id).await?;
         local.path = dest;
         local.modified = crate::import::modified(&std::fs::metadata(&local.path)?);
         self.0.store.put("local", &local.media.id, &local)?;

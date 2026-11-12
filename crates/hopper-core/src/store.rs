@@ -1,3 +1,5 @@
+mod imported_folders;
+
 use crate::model::{Progress, now};
 use anyhow::{Result, bail};
 use rusqlite::{Connection, OptionalExtension, params};
@@ -8,10 +10,11 @@ pub struct Store(Mutex<Connection>);
 
 impl Store {
     pub fn open(path: &Path) -> Result<Self> {
-        let c = Connection::open(path)?;
+        let mut c = Connection::open(path)?;
         c.execute_batch("PRAGMA journal_mode=WAL; PRAGMA synchronous=FULL;
             CREATE TABLE IF NOT EXISTS records(kind TEXT NOT NULL, key TEXT NOT NULL, value TEXT NOT NULL,
             PRIMARY KEY(kind,key));")?;
+        imported_folders::initialize(&mut c)?;
         Ok(Self(Mutex::new(c)))
     }
     pub fn get<T: DeserializeOwned>(&self, kind: &str, key: &str) -> Result<Option<T>> {

@@ -189,12 +189,7 @@ impl Node {
         self.delivery_owner(Some(&owner.id))?;
         let batch = crate::random_secret();
         for id in ids {
-            self.stage_media(id).await?;
-            let local = self
-                .0
-                .store
-                .get::<LocalMedia>("local", id)?
-                .context("imported file missing")?;
+            let local = self.stage_media(id).await?;
             self.enqueue(
                 owner.clone(),
                 Payload::Media { id: id.clone() },
@@ -204,19 +199,30 @@ impl Node {
         }
         Ok(())
     }
-    async fn stage_media(&self, id: &str) -> Result<()> {
+    async fn stage_media(&self, id: &str) -> Result<LocalMedia> {
         let _guard = self.0.downloads.lock().await;
-        let mut local = self
+        let (import_root, mut local) = match self
             .0
             .store
             .get::<LocalMedia>("local", id)?
-            .context("imported media missing")?;
+            .filter(crate::import::available)
+        {
+            Some(file) => (None, file),
+            None => {
+                let (name, file) = self
+                    .0
+                    .store
+                    .imported_file(id)?
+                    .context("imported media missing")?;
+                (Some(name), file)
+            }
+        };
         ensure!(
             crate::import::available(&local),
             "source changed; import it again"
         );
         if local.managed {
-            return Ok(());
+            return Ok(local);
         }
         let temp = tempfile::NamedTempFile::new_in(self.0.dir.join("media"))?;
         tokio::fs::copy(&local.path, temp.path()).await?;
@@ -241,11 +247,12 @@ impl Node {
         );
         temp.as_file().sync_all()?;
         let dest = self.0.dir.join("media").join(format!("{id}.{ext}"));
-        temp.persist(&dest)?;
+        crate::import::persist_managed(temp, &dest, id).await?;
         local.path = dest;
         local.managed = true;
         local.modified = crate::import::modified(&std::fs::metadata(&local.path)?);
-        self.0.store.put("local", id, &local)
+        self.0.store.put_import(import_root.as_deref(), &local)?;
+        Ok(local)
     }
     pub fn retry_delivery(&self, id: &str) -> Result<()> {
         self.0.store.update::<Delivery>("delivery", id, |old| {

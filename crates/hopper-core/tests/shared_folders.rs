@@ -165,3 +165,53 @@ async fn share_survives_restart_and_offline_folder_returns() {
     assert!(online.warning.is_none());
     desktop.close().await;
 }
+
+#[tokio::test]
+async fn removing_a_folder_import_keeps_duplicate_sources_and_originals() {
+    let tmp = tempfile::tempdir().unwrap();
+    let (host, hello) = start(tmp.path(), "Host").await;
+    let client = reqwest::Client::new();
+    let api = format!("http://127.0.0.1:{}/api", hello.port);
+    let roots = [tmp.path().join("A/Album"), tmp.path().join("B/Album")];
+    for root in &roots {
+        std::fs::create_dir_all(root.join("Disc")).unwrap();
+        std::fs::write(root.join("Disc/track.wav"), b"same recording").unwrap();
+        assert_eq!(host.import(vec![root.clone()]).await.unwrap().added, 1);
+    }
+    let share = host.share_folder(roots[0].clone()).await.unwrap();
+    let response: Value = client
+        .get(format!("{api}/folders"))
+        .bearer_auth(&hello.token)
+        .send()
+        .await
+        .unwrap()
+        .json()
+        .await
+        .unwrap();
+    let imports = response["imports"].as_array().unwrap();
+    assert_eq!(imports.len(), 2);
+    assert_ne!(imports[0]["id"], imports[1]["id"]);
+    for folder in imports {
+        assert_eq!(folder["files"], 1);
+        let url = format!("{api}/imported-folders/{}", folder["id"].as_str().unwrap());
+        assert_eq!(client.delete(&url).send().await.unwrap().status(), 401);
+        client
+            .delete(&url)
+            .bearer_auth(&hello.token)
+            .send()
+            .await
+            .unwrap()
+            .error_for_status()
+            .unwrap();
+        assert_eq!(host.snapshot().unwrap().items.len(), 1);
+    }
+    host.stop_sharing_folder(share.id).await.unwrap();
+    assert!(host.snapshot().unwrap().items.is_empty());
+    for root in roots {
+        assert_eq!(
+            std::fs::read(root.join("Disc/track.wav")).unwrap(),
+            b"same recording"
+        );
+    }
+    host.close().await;
+}

@@ -11,3 +11,5 @@ Podcasts is a first-class navigation destination; its show/settings surfaces reu
 
 The existing avatar is an accessible Appearance button. material.css layers material tokens over
 styles.css without changing geometry. The system light/dark color scheme is advertised.
+
+The Folders view has a labeled Added folders region above the collection filters.

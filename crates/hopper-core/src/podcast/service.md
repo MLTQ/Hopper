@@ -12,3 +12,5 @@ serialized to avoid losing variants. Unsupported transcript formats produce meta
 Jobs and media live in SQLite and private managed storage; private local paths stay off the mesh.
 
 Batch cuts check existing jobs/options before creating any jobs, avoiding partial batches on conflicts.
+
+Publishing a downloaded episode reuses an existing identical managed file so overlapping library folder sources keep their valid timestamps.

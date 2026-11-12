@@ -15,3 +15,5 @@ Generic update holds the connection mutex across read/validation/write so a proc
 transition cannot resurrect a job cancelled concurrently.
 
 Regression tests borrow single progress records directly; no extra clones are needed for merging.
+
+The imported_folders module initializes and upgrades folder memberships transactionally. Folder imports can own the same media independently.

@@ -30,3 +30,5 @@ share the same behavior. Delivery staging failures stay visible in ImportReport.
 Shared-folder indexes contribute available local media to both the library and the peer catalogue. Desktop startup schedules periodic rescans.
 
 Desktop shells derive their default device label from the machine name. Device identity still comes from its persisted key.
+
+Folder import and removal operations serialize local publication and Home enqueue so a removal cannot strand an addition partway through.
