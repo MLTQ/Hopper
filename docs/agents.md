@@ -30,8 +30,7 @@ checkbox clears the saved value (an environment fallback still applies).
 
 Hermes mode accepts an executable/argv JSON array, for example `["/absolute/path/to/hermes"]`.
 Hopper invokes `hermes chat --quiet -q <job instruction>` and includes the bundled hopper-cut-ads skill. Hermes needs configured model access and tools for audio listening or local timed transcription of the exact episode. A timed transcript can establish spoken sponsorships. Preserve ambiguous dialogue or music. This adapter does not install Hermes or give a
-text-only model audio capabilities. The CLI contract was checked against local Hermes source;
-live audio processing with Hermes has not yet been validated.
+text-only model audio capabilities. A live Hermes run on an Omarchy owner desktop identified the spoken sponsor break in a short staged episode, and Hopper rendered the cut. Long episodes and more ambiguous host reads still need listening checks.
 
 Custom mode invokes your argv followed by `--request <request.json> --output <analysis.json>`.
 No shell is used. The private request includes `protocol: hopper.ad-analysis.v1`, an input audio
