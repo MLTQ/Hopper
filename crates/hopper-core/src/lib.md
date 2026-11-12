@@ -32,3 +32,5 @@ Shared-folder indexes contribute available local media to both the library and t
 Desktop shells derive their default device label from the machine name. Device identity still comes from its persisted key.
 
 Folder import and removal operations serialize local publication and Home enqueue so a removal cannot strand an addition partway through.
+
+When duplicate media arrives from another source, a known logical folder can fill a previously empty folder field.

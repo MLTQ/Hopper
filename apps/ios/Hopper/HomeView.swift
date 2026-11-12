@@ -10,13 +10,16 @@ struct AddPodcastsBody: Encodable {
 struct AddedPodcasts: Decodable { let deliveryIds: [String]; let warnings: [String] }
 
 struct HomeSection: View {
+    @State private var saving = false
     @EnvironmentObject var client: HopperClient
     var body: some View {
         Section {
             Picker("Home desktop", selection: Binding(get: { client.library.home?.id ?? "" }, set: { id in
-                guard !id.isEmpty else { return }
+                guard !id.isEmpty, !saving else { return }
+                saving = true
                 Task {
-                    do { let _: Ack = try await client.post("home", HomeBody(deviceId: id)); await client.refresh(); await client.drainShareInbox() }
+                    defer { saving = false }
+                    do { client.library = try await client.post("home", HomeBody(deviceId: id)); await client.drainShareInbox() }
                     catch { client.error = error.localizedDescription }
                 }
             })) {
@@ -24,7 +27,7 @@ struct HomeSection: View {
                 ForEach(client.podcasts.hosts.filter { $0.desktop }) { host in
                     Text(host.device.name + (host.online ? "" : " · offline")).tag(host.id)
                 }
-            }
+            }.disabled(saving)
         } header: { Text("Home") } footer: {
             Text("New subscriptions and files go to this desktop. Keep Hopper running there to receive additions and prepare audio. Existing shows stay on their current desktop.")
         }
@@ -34,18 +37,27 @@ struct DeliverySection: View {
     @EnvironmentObject var client: HopperClient
     var body: some View {
         if let jobs = client.library.deliveries, !jobs.isEmpty {
-            Section("Sending to Home") {
-                ForEach(jobs) { job in
-                    VStack(alignment: .leading, spacing: 5) {
-                        Text(job.label + " · " + job.owner.name).font(.subheadline)
-                        Text(job.message).font(.caption).foregroundColor(job.state == "failed" ? .orange : .secondary)
-                        if job.state == "waiting" || job.state == "failed" {
-                            Button("Retry now") { Task {
-                                do { let _: Ack = try await client.post("deliveries/\(job.id)/retry", EmptyBody()); await client.refresh() }
-                                catch { client.error = error.localizedDescription }
-                            } }.font(.caption)
-                        }
-                    }.padding(.vertical, 4)
+            Section {
+                NavigationLink {
+                    List(jobs) { job in
+                        VStack(alignment: .leading, spacing: 5) {
+                            Text(job.label + " · " + job.owner.name).font(.subheadline)
+                            Text(job.message).font(.caption).foregroundColor(job.state == "failed" ? .orange : .secondary)
+                            if job.state == "waiting" || job.state == "failed" {
+                                Button("Retry now") { Task {
+                                    do { let _: Ack = try await client.post("deliveries/\(job.id)/retry", EmptyBody()); await client.refresh() }
+                                    catch { client.error = error.localizedDescription }
+                                } }.font(.caption)
+                            }
+                        }.padding(.vertical, 4)
+                    }.navigationTitle("Import activity")
+                } label: {
+                    let failures = jobs.filter { $0.state == "failed" }.count
+                    HStack {
+                        Text("Import activity")
+                        Spacer()
+                        if failures > 0 { Text("\(failures) failed").font(.caption).foregroundColor(.orange) }
+                    }
                 }
             }
         }

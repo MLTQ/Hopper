@@ -6,7 +6,9 @@ original/downloaded/cleaned states and show real durable-job progress. Play/queu
 original media on the owner then uses the existing native player and Iroh streaming path.
 Show menus open normal settings and a dedicated Cut ads sheet. No model inference runs in a view.
 
-Subscription intake is split into SubscribePodcastView. DeliverySection displays pending and completed additions.
+Subscription intake is split into SubscribePodcastView.
 
 Show/library backgrounds use hopperScene while episode rows remain solid for legibility.
 Semantic warnings and processing errors retain their original colors.
+
+Podcasts opens on subscriptions. Import activity lives in Devices. Show and episode covers use publisher artwork when available.

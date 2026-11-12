@@ -8,3 +8,5 @@ future-episode processing. Queue/play use the cleaned variant when ready; origin
 Job statuses come from the core. Missing agent configuration is explicitly shown as waiting.
 
 Audio agent opens the local setup dialog; a remotely owned show directs setup to its desktop.
+
+The show grid loads publisher cover images and leaves delivery receipts in Devices.

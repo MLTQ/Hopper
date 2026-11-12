@@ -52,20 +52,21 @@ pub(crate) async fn persist_managed(
     dest: &Path,
     id: &str,
 ) -> Result<()> {
+    let dest = dest.to_owned();
+    let id = id.to_owned();
+    tokio::task::spawn_blocking(move || persist_managed_blocking(temp, &dest, &id)).await?
+}
+
+fn persist_managed_blocking(temp: tempfile::NamedTempFile, dest: &Path, id: &str) -> Result<()> {
     match temp.persist_noclobber(dest) {
         Ok(_) => Ok(()),
         Err(error) if error.error.kind() == std::io::ErrorKind::AlreadyExists => {
-            let dest = dest.to_owned();
-            let id = id.to_owned();
-            tokio::task::spawn_blocking(move || {
-                let mut hasher = blake3::Hasher::new();
-                hasher.update_reader(File::open(&dest)?)?;
-                if hasher.finalize().to_hex().as_str() != id {
-                    error.file.persist(dest)?;
-                }
-                Ok(())
-            })
-            .await?
+            let mut hasher = blake3::Hasher::new();
+            hasher.update_reader(File::open(dest)?)?;
+            if hasher.finalize().to_hex().as_str() != id {
+                error.file.persist(dest)?;
+            }
+            Ok(())
         }
         Err(error) => Err(error.into()),
     }
@@ -171,6 +172,8 @@ fn read_metadata(path: &Path, media: &mut Media) {
                         .map(str::to_owned)
                         .unwrap_or_else(|| format!("Chapter {}", i + 1)),
                     start,
+                    artwork_url: None,
+                    hidden: false,
                     end: c["end_time"]
                         .as_str()
                         .and_then(|v| v.parse::<f64>().ok())
@@ -185,6 +188,14 @@ fn read_metadata(path: &Path, media: &mut Media) {
 fn read_metadata(_: &Path, _: &mut Media) {}
 
 pub fn import_paths(store: &Store, paths: &[PathBuf]) -> ImportReport {
+    walk_import(store, paths, None)
+}
+
+pub(crate) fn walk_import(
+    store: &Store,
+    paths: &[PathBuf],
+    managed_root: Option<&Path>,
+) -> ImportReport {
     let mut report = ImportReport::default();
     for root in paths {
         if !root.exists() {
@@ -201,6 +212,8 @@ pub fn import_paths(store: &Store, paths: &[PathBuf]) -> ImportReport {
         for entry in walkdir::WalkDir::new(root)
             .follow_links(false)
             .max_depth(32)
+            .into_iter()
+            .filter_entry(|e| !managed_root.is_some_and(|root| e.path().starts_with(root)))
         {
             let entry = match entry {
                 Ok(e) => e,
@@ -224,7 +237,28 @@ pub fn import_paths(store: &Store, paths: &[PathBuf]) -> ImportReport {
                 .unwrap_or(Path::new(""))
                 .to_string_lossy()
                 .replace('\\', "/");
-            match inspect(entry.path(), &filename, &folder, false).and_then(|m| {
+            let inspected = if let Some(root) = managed_root {
+                (|| -> Result<LocalMedia> {
+                    let directory = root.join("media");
+                    let temp = tempfile::NamedTempFile::new_in(&directory)?;
+                    std::fs::copy(entry.path(), temp.path())?;
+                    let mut local = inspect(temp.path(), &filename, &folder, true)?;
+                    let extension = entry
+                        .path()
+                        .extension()
+                        .unwrap_or_default()
+                        .to_string_lossy();
+                    let dest = directory.join(format!("{}.{}", local.media.id, extension));
+                    temp.as_file().sync_all()?;
+                    persist_managed_blocking(temp, &dest, &local.media.id)?;
+                    local.modified = modified(&dest.metadata()?);
+                    local.path = dest;
+                    Ok(local)
+                })()
+            } else {
+                inspect(entry.path(), &filename, &folder, false)
+            };
+            match inspected.and_then(|m| {
                 store.put_import(import_folder.as_deref(), &m)?;
                 Ok(m.media.id)
             }) {

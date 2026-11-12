@@ -48,6 +48,9 @@ pub(crate) async fn serve(node: Node) -> Result<u16> {
         .route("/imported-folders/:id", delete(remove_imported_folder))
         .route("/pair", post(pair))
         .route("/peers/:id", delete(unpair))
+        .route("/import/folder", post(copy_folder))
+        .route("/podcasts/artwork", post(podcast_artwork))
+        .route("/podcasts/chapters/:id", get(original_chapters))
         .route("/import", post(import_paths))
         .route("/upload", post(upload))
         .route("/progress", post(progress))
@@ -195,7 +198,7 @@ pub(crate) async fn serve(node: Node) -> Result<u16> {
 
 fn asset(mime: &'static str, body: &'static str) -> Response {
     ([(header::CONTENT_TYPE,mime),(header::CACHE_CONTROL,"no-store"),(header::REFERRER_POLICY,"no-referrer"),
-      (header::CONTENT_SECURITY_POLICY,"default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; media-src 'self' blob:; connect-src 'self'; frame-ancestors 'none'; base-uri 'none'" )],body).into_response()
+      (header::CONTENT_SECURITY_POLICY,"default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data: https: http:; media-src 'self' blob:; connect-src 'self'; frame-ancestors 'none'; base-uri 'none'" )],body).into_response()
 }
 
 async fn authenticate(State(node): State<Node>, request: Request, next: Next) -> Response {
@@ -257,6 +260,92 @@ async fn set_home(
     node.set_home(settings)?;
     Ok(Json(node.library()?))
 }
+#[derive(Deserialize)]
+struct ArtworkRequest {
+    url: String,
+}
+
+async fn podcast_artwork(Json(input): Json<ArtworkRequest>) -> Result<Response, ApiError> {
+    let (_, bytes) = crate::podcast::fetch::document(&input.url).await?;
+    Ok((
+        [
+            (header::CONTENT_TYPE, "application/octet-stream"),
+            (header::CACHE_CONTROL, "no-store"),
+            (header::X_CONTENT_TYPE_OPTIONS, "nosniff"),
+        ],
+        bytes,
+    )
+        .into_response())
+}
+
+// A listener with an older desktop can recover publisher chapters for the original recording.
+async fn original_chapters(State(node): State<Node>, Path(id): Path<String>) -> Api<Vec<Chapter>> {
+    let episode = node
+        .library()?
+        .podcasts
+        .episodes
+        .into_iter()
+        .find(|e| e.id == id)
+        .ok_or_else(|| anyhow::anyhow!("Episode is no longer in the library"))?;
+    let url = episode
+        .chapters_url
+        .ok_or_else(|| anyhow::anyhow!("No chapter link"))?;
+    let key = blake3::hash(
+        format!(
+            "{id}\0{}\0{url}",
+            episode.original_id.as_deref().unwrap_or("")
+        )
+        .as_bytes(),
+    )
+    .to_hex()
+    .to_string();
+    if let Some(saved) = node.0.store.get("original_chapters", &key)? {
+        return Ok(Json(saved));
+    }
+    let (_, chapters) = crate::podcast::chapters::download(&url).await?;
+    node.0.store.put("original_chapters", &key, &chapters)?;
+    Ok(Json(chapters))
+}
+async fn copy_folder(State(node): State<Node>, Json(input): Json<Value>) -> Api<Option<Value>> {
+    let path = if let Some(path) = input.get("path").and_then(Value::as_str) {
+        PathBuf::from(path)
+    } else {
+        let picker = node
+            .0
+            .folders
+            .picker
+            .get()
+            .ok_or_else(|| anyhow::anyhow!("Enter the folder path on this desktop"))?;
+        let Some(path) = picker().await else {
+            return Ok(Json(None));
+        };
+        path
+    };
+    let path = path.canonicalize()?;
+    if !path.is_dir() {
+        return Err(anyhow::anyhow!("Choose a folder").into());
+    }
+    let data = node.0.dir.canonicalize()?;
+    if path.starts_with(&data) {
+        return Err(anyhow::anyhow!("Choose a folder outside Hopper’s app data").into());
+    }
+    let _guard = node.0.imports.lock().await;
+    let folder = path
+        .file_name()
+        .map(|name| name.to_string_lossy().into_owned())
+        .unwrap_or_default();
+    let n = node.clone();
+    let mut report =
+        tokio::task::spawn_blocking(move || import::walk_import(&n.0.store, &[path], Some(&data)))
+            .await?;
+    if let Err(e) = node.send_imports_home(&report.item_ids).await {
+        report.errors.push(e.to_string());
+    }
+    let mut response = serde_json::to_value(report)?;
+    response["folder"] = folder.into();
+    Ok(Json(Some(response)))
+}
+
 async fn add_podcasts(
     State(node): State<Node>,
     Json(input): Json<crate::home::AddPodcasts>,

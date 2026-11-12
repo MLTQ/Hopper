@@ -5,3 +5,5 @@ Full local HTTP RSS → paired subscribe → download → external-agent protoco
 chapters, VTT and soundbites, and uses a clearly synthetic fixture agent with known classifications.
 This verifies integration/rendering, not real-world model ad-recognition accuracy. FFmpeg is required;
 CI without it explicitly skips rendering coverage. Preserve byte-exact originals and duplicate GUIDs.
+
+The fixture checks episode and show covers, relative chapter artwork and hidden markers after ad removal.

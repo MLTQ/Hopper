@@ -291,6 +291,11 @@ impl Node {
                     };
                     items
                         .entry(media.id.clone())
+                        .and_modify(|item| {
+                            if item.media.folder.is_empty() {
+                                item.media.folder.clone_from(&media.folder);
+                            }
+                        })
                         .or_insert_with(|| LibraryItem {
                             media,
                             sources: vec![],

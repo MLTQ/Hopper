@@ -18,6 +18,9 @@ Origin must match the node origin. JSON uses snake_case. No peer receives this c
 | DELETE | /api/imported-folders/:id | Remove a one-time local folder import and preserve files on disk |
 | POST | /api/pair | `{code}`; persist mutual trust and fetch peer library |
 | DELETE | /api/peers/:id | Remove local trust and peer catalogue; retain downloaded copies |
+| POST | /api/import/folder | Pick and copy a directory tree with the desktop’s native chooser, or supply a local path. Returns an import report or null on cancellation. |
+| POST | /api/podcasts/artwork | Fetch a bounded HTTP(S) image document for the authenticated native shell. The publisher receives no Hopper credentials. |
+| GET | /api/podcasts/chapters/:id | Fetch and cache an original episode’s publisher chapter timeline by catalogued episode ID. Cleaned variants use their remapped media chapters. |
 | POST | /api/import | `{paths:[...]}` local paths; return `{added,skipped,errors}` |
 | POST | /api/upload | Multipart files; copy into managed storage; same report |
 | POST | /api/play/:id | `{path}` relative media URL with scoped grant |

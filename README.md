@@ -103,7 +103,7 @@ cellular transitions, long pauses, and extended locked playback.
 1. On the desktop, open **Put something in → Share a desktop folder → Choose folder…** and pick your podcast archive.
 2. Open **Pair a device → Create pairing QR code**. Keep the code on screen.
 3. On iPhone, open **Hopper → Devices → Scan pairing QR code**, allow the camera, and scan the desktop. You can also paste the invitation in Devices.
-4. In the iPhone **Library**, choose **All folders**, select the archive, and tap an episode to stream it. **Play all** queues the filtered list.
+4. In the iPhone **Library**, open the archive, then its plotline or season. **Play folder** starts that branch. Tapping an episode starts there and continues within the branch. On desktop, open **Folders** for the same hierarchy.
 5. Repeat the QR scan for each additional desktop. All paired libraries appear together. Use **Keep on this device** on an episode for offline listening.
 
 Original-owning desktops must stay online for streaming. Downloaded copies work offline and are
@@ -117,7 +117,7 @@ Actual playback depends on the native player/system webview's codec support. Bro
 conversion, embedded artwork, resumable downloads and automatic folder replication are follow-ups.
 
 Remaining product work includes publishing private cleaned RSS feeds, full Podcasting 2.0 support,
-chapter-art display, semantic transcript search, and evaluating real-world ad-detection accuracy.
+broader embedded-art support, semantic transcript search, and evaluating real-world ad-detection accuracy.
 See [the roadmap](docs/roadmap.md) and [agent limitations](docs/agents.md).
 
 ```sh

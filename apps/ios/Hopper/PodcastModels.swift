@@ -9,11 +9,13 @@ struct CutOptions: Codable {
 }
 struct PodcastShow: Decodable, Identifiable {
     let id: String; let owner: Device; let title: String; let author: String; let description: String
+    let artworkUrl: String?
     let newestFirst: Bool; let cutOptions: CutOptions; let error: String?
 }
 struct PodcastEpisode: Decodable, Identifiable {
     let id: String; let showId: String; let title: String; let description: String
     let published: Int64; let duration: Double?; let originalId: String?; let cleanedId: String?
+    let artworkUrl: String?; let chaptersUrl: String?
     let metadataWarnings: [String]
     var playableId: String? { cleanedId ?? originalId }
 }

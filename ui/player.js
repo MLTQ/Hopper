@@ -31,6 +31,13 @@ export class Player {
   }
   update(library) {
     this.items = new Map(library.items.map(item => [item.id, item]));
+    const covers = new Map((library.podcasts?.shows || []).map(show => [show.id, show.artwork_url]));
+    this.episodeArt = new Map();
+    for (const episode of library.podcasts?.episodes || []) {
+      for (const id of [episode.original_id, episode.cleaned_id]) {
+        if (id) this.episodeArt.set(id, { cover: episode.artwork_url || covers.get(episode.show_id), episode });
+      }
+    }
     if (!this.initialized) {
       this.queue = library.queue.items.filter(id => this.items.has(id));
       this.current = library.queue.current && this.items.has(library.queue.current) ? library.queue.current : null;
@@ -49,7 +56,7 @@ export class Player {
     const attempt = ++this.loading;
     this.save(); this.media.pause(); this.loadedId = null; this.media.removeAttribute('src'); this.media.load();
     if (!this.queue.includes(id)) this.queue.push(id);
-    this.current = id;
+    this.current = id; this.extraChapters = undefined;
     this.onChange(); this.paint();
     document.getElementById('playback-status').textContent = 'CONNECTING…';
     try {
@@ -57,9 +64,15 @@ export class Player {
       if (attempt !== this.loading) return;
       const start = item.progress && !item.progress.completed ? item.progress.position : 0;
       this.media.src = new URL(result.path, location.href).href;
+      this.extraChapters = undefined;
+      const episode = this.episodeArt?.get(id)?.episode;
+      if (episode?.original_id === id && episode.chapters_url && !item.chapters.some(c => c.artwork_url)) {
+        api(`podcasts/chapters/${episode.id}`).then(chapters => {
+          if (attempt === this.loading) { this.extraChapters = chapters; this.paint(); }
+        }).catch(() => {});
+      }
       this.media.onloadedmetadata = () => { if (attempt !== this.loading) return; this.loadedId = id; this.media.currentTime = Math.min(start, Number.isFinite(this.media.duration) ? Math.max(0, this.media.duration - 1) : start); };
       this.media.playbackRate = Number(document.getElementById('rate').value);
-      if ('mediaSession' in navigator && typeof MediaMetadata !== 'undefined') navigator.mediaSession.metadata = new MediaMetadata({ title: item.title, artist: item.creator, album: item.album });
       document.getElementById('show-video').hidden = item.kind !== 'video';
       if (item.kind === 'video') document.getElementById('video-container').hidden = false;
       await this.persist(); if (attempt !== this.loading) return; await this.media.play();
@@ -71,7 +84,7 @@ export class Player {
     else this.media.pause();
   }
   enqueue(id) { if (!this.queue.includes(id)) this.queue.push(id); this.persist(); }
-  async playAll(items) { this.queue = items.map(item => item.id); if (this.queue[0]) await this.play(this.queue[0]); }
+  async playAll(items, start = items[0]?.id) { this.queue = items.map(item => item.id); if (start) await this.play(start); }
   move(id, by) { const i = this.queue.indexOf(id), j = i + by; if (j < 0 || j >= this.queue.length) return; [this.queue[i], this.queue[j]] = [this.queue[j], this.queue[i]]; this.persist(); }
   stop() { ++this.loading; this.save(); this.media.pause(); this.loadedId = null; this.media.onloadedmetadata = null; this.media.removeAttribute('src'); this.media.load(); this.current = null; }
   remove(id) { if (id === this.current) this.stop(); this.queue = this.queue.filter(x => x !== id); this.persist(); this.paint(); }
@@ -89,7 +102,28 @@ export class Player {
     const item = this.items.get(this.current), media = this.media;
     document.getElementById('player-title').textContent = item?.title || 'Your next good listen';
     document.getElementById('player-subtitle').textContent = item ? item.creator || item.folder || 'From your collection' : 'Pick something from your hopper';
-    const art = document.getElementById('player-art'); art.className = `art ${item ? tone(item.id) : 'tone-0'}`; art.textContent = item ? initials(item) : '♪';
+    const chapters = this.extraChapters || item?.chapters || [];
+    const now = media.currentTime || 0;
+    let chapter;
+    for (const cue of chapters) { if (cue.start > now) break; if (cue.end == null || now < cue.end) chapter = cue; }
+    const cover = this.episodeArt?.get(item?.id)?.cover;
+    const urls = [chapter?.artwork_url, cover].filter(u => typeof u === 'string' && /^https?:\/\//i.test(u));
+    const art = document.getElementById('player-art');
+    const key = JSON.stringify([item?.id, ...urls]);
+    if (art.dataset.cover !== key) {
+      art.dataset.cover = key; art.className = `art ${item ? tone(item.id) : 'tone-0'}`;
+      art.textContent = item ? initials(item) : '♪';
+      if (urls.length) {
+        const image = new Image(); image.alt = ''; image.referrerPolicy = 'no-referrer';
+        let next = 1;
+        image.onerror = () => { if (next < urls.length) image.src = urls[next++]; else image.remove(); };
+        image.src = urls[0]; art.append(image);
+      }
+      if (item && 'mediaSession' in navigator && typeof MediaMetadata !== 'undefined') {
+        navigator.mediaSession.metadata = new MediaMetadata({ title: item.title, artist: item.creator,
+          album: item.album, artwork: urls.map(src => ({ src })) });
+      }
+    }
     document.getElementById('toggle-play').textContent = media.paused ? '▶' : 'Ⅱ';
     document.getElementById('toggle-play').setAttribute('aria-label', media.paused ? 'Play' : 'Pause');
     const total = Number.isFinite(media.duration) ? media.duration : item?.duration || 0;

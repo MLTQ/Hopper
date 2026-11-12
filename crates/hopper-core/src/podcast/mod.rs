@@ -1,8 +1,9 @@
 pub mod agent;
 #[cfg(not(target_os = "ios"))]
 mod analyzer;
+pub(crate) mod chapters;
 pub mod feed;
-mod fetch;
+pub(crate) mod fetch;
 pub mod intake;
 #[cfg(not(target_os = "ios"))]
 mod llm;

@@ -59,6 +59,8 @@ pub struct Episode {
     pub mime: String,
     pub published: i64,
     pub duration: Option<f64>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub artwork_url: Option<String>,
     pub chapters_url: Option<String>,
     pub transcript_url: Option<String>,
     pub transcript_type: Option<String>,

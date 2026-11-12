@@ -8,3 +8,5 @@ resolve indexed content IDs only. Original paths never enter snapshots. Unsharin
 the selected registration; independent copies and other shared roots remain available.
 
 Source lookup includes one-time imported folders. Identical content remains playable from an available independent file, another import or a registered share.
+
+A known shared-folder path can restore the folder label of an existing loose import with identical bytes.

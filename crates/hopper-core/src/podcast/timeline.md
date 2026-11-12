@@ -12,3 +12,5 @@ chapter images, transcript splits and wrong-source rejection.
 
 Conflicting overlapping classifications preserve protected content, uncertain ranges and kept banter/
 promos. Chapter JSON entries are sorted/validated before inferred ends are mapped.
+
+Remapped playable chapter entries carry the image URL and table-of-contents visibility from the source.

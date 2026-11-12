@@ -13,3 +13,5 @@ Serializable contracts shared by the local API, Iroh protocol, desktop and iOS c
   show owners and advertise host capabilities; episode IDs differ from immutable media variant hashes.
 
 Local Library adds home and deliveries; ImportReport adds item_ids. These do not change peer snapshot serialization.
+
+Chapter artwork URLs and hidden cues are optional on the wire so old persisted media and peers still decode.

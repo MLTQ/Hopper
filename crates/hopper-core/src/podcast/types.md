@@ -11,3 +11,5 @@ Owner commands are typed and contain no executable commands or filesystem paths.
 
 Player/peer catalogues omit heavy analysis/transcript/chapter documents and truncate episode
 descriptions. Full processing records stay on the owner; playable Media still includes chapters.
+
+Episode artwork is optional. Compact catalogues keep episode covers and chapter document links.

@@ -12,3 +12,5 @@ File imports copy into the app sandbox while security-scoped access is active. B
 does not depend on this client's polling loop. Refresh failures are visible, never fabricated data.
 
 Starts share-inbox draining after core startup; serialized drain state prevents duplicate concurrent intake.
+
+Index media, shows and media-to-episode associations when a catalogue arrives. The player uses these indexes for repeated queue and artwork lookups.

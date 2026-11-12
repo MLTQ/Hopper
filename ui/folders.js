@@ -1,6 +1,6 @@
 import { api, escape as esc } from './api.js';
 
-export async function sharedFolders(dialog, toast, load) {
+export async function sharedFolders(dialog, toast, load, onShared) {
   const { folders, can_choose } = await api('folders');
   dialog('Shared folders', `<p>Choose a folder on this desktop to stream its media to your paired devices. Hopper checks for changes while it is open.</p>
     ${can_choose ? '<button class="primary" id="pick-share">Choose folder…</button>' : ''}
@@ -10,23 +10,27 @@ export async function sharedFolders(dialog, toast, load) {
   const form = document.getElementById('share-path');
   const panel = document.getElementById('dialog-body');
   const status = document.getElementById('folder-status');
-  const run = async (message, action) => {
+  const run = async (message, action, adding = false) => {
     const controls = [...panel.querySelectorAll('button,input')];
     controls.forEach(el => el.disabled = true);
     status.textContent = message;
     try {
-      await action();
+      const result = await action();
       await load();
-      if (status.isConnected && document.getElementById('dialog').open) await sharedFolders(dialog, toast, load);
+      if (adding && result?.path && status.isConnected && document.getElementById('dialog').open) {
+        onShared(result.path.split(/[\\/]/).filter(Boolean).pop() || '');
+        return;
+      }
+      if (status.isConnected && document.getElementById('dialog').open) await sharedFolders(dialog, toast, load, onShared);
     } catch (error) { toast(error.message, true); }
     finally { controls.forEach(el => el.disabled = false); status.textContent = ''; }
   };
   if (can_choose) document.getElementById('pick-share').onclick = () =>
-    run('Choose a folder to index its media…', () => api('folders/choose', {}));
+    run('Choose a folder to index its media…', () => api('folders/choose', {}), true);
   form.onsubmit = event => {
     event.preventDefault();
     const path = new FormData(form).get('path');
-    run('Reading media files…', () => api('folders', { path }));
+    run('Reading media files…', () => api('folders', { path }), true);
   };
   panel.querySelectorAll('[data-scan-root]').forEach(button => {
     button.onclick = () => run('Checking folder…', () => api(`folders/${button.dataset.scanRoot}/rescan`, {}));
@@ -90,4 +94,26 @@ export function addedFolders(panel, dialog, toast, load) {
     };
   });
   return refresh;
+}
+
+export function folderLevel(items, path) {
+  const prefix = path ? path + '/' : '';
+  const children = new Map(), files = [];
+  for (const item of items) {
+    if (item.folder === path) { files.push(item); continue; }
+    if (!item.folder.startsWith(prefix)) continue;
+    const name = item.folder.slice(prefix.length).split('/', 1)[0];
+    if (name) children.set(name, (children.get(name) || 0) + 1);
+  }
+  return { files, children: [...children].sort(([a], [b]) => a.localeCompare(b, undefined, { numeric: true }))
+    .map(([name, count]) => ({ name, path: prefix + name, count })) };
+}
+
+export function folderTrail(path) {
+  const parts = path.split('/').filter(Boolean);
+  let html = '<button class="text-button" data-folder="">All folders</button>';
+  parts.forEach((part, i) => {
+    html += ` › <button class="text-button" data-folder="${esc(parts.slice(0, i + 1).join('/'))}">${esc(part)}</button>`;
+  });
+  return '<nav aria-label="Folder path">' + html + '</nav>';
 }

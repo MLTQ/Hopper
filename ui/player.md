@@ -12,3 +12,5 @@ Persistent desktop audio/video element, device queue, media controls and progres
 - No library rerender replaces the media element. Every asynchronous load has a generation guard.
 - Progress is attached to the loaded media ID, not a pending selection; queue writes are serialized.
 - Removing the current item or clearing the queue cancels any outstanding playback load.
+
+A folder queue can start at a selected episode and follows the ordered items in that subtree.

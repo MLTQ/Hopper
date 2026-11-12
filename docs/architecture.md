@@ -76,6 +76,18 @@ the core outbox, using stable batch IDs and removing manifests only after enqueu
 The main app and extension have separate lifetimes; neither this inbox nor Iroh promises background
 execution after the phone app is suspended or terminated. See [setup](imports-and-home.md).
 
+## Browsing folders and episode artwork
+Clients derive folder levels from the logical paths in the catalogue; a phone does not need the
+desktop’s filesystem paths. A folder lists its immediate children. Playing it queues the media
+under that branch in natural folder and title order. Shared roots index in place; the desktop’s
+native copy action can instead make a managed copy while retaining the same directory hierarchy.
+
+A chapter can carry a publisher image and a hidden table-of-contents flag. Cuts remap chapter
+times while keeping these fields. When playing an original from an older catalogue, clients can
+request the publisher’s chapter document using the catalogued episode ID. This fallback never
+places original timings onto a cleaned recording. Players prefer current chapter art, then episode
+and show art; iOS uses the same selection for its system playback controls.
+
 ## Scope and validation
 The current slice includes RSS subscriptions, pluggable audio processing and timeline remapping.
 Full Podcasting 2.0 support, cleaned RSS publishing, transcript/vector search, automatic offline folder

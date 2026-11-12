@@ -1,7 +1,12 @@
-import { importPodcasts, deliveryList } from './home.js';
+import { importPodcasts } from './home.js';
 import { agentSettings } from './agents.js';
 import { api, escape as esc, time, duration } from './api.js';
 
+// Only publishers' HTTP images are eligible for display. Feed text stays escaped.
+function cover(address) {
+  if (!address || !/^https?:\/\//i.test(address)) return '';
+  return `<img src="${esc(address)}" alt="" loading="lazy" referrerpolicy="no-referrer">`;
+}
 export class Podcasts {
   constructor({ dialog, toast, load, player }) { Object.assign(this, { dialog, toast, load, player }); this.selected = null; this.library = null; }
   get catalogue() { return this.library?.podcasts || { shows: [], episodes: [], jobs: [], hosts: [] }; }
@@ -17,7 +22,8 @@ export class Podcasts {
     document.getElementById('folder-list').hidden = true;
     const target = document.getElementById('collection');
     if (!show) {
-      target.innerHTML = `<div class="podcast-toolbar"><p>Follow a show. Keep the conversation.</p><button class="secondary" data-agent-settings>Audio agent</button><button class="primary" data-podcast-subscribe>＋ Subscribe</button></div>` + deliveryList(library) + (this.catalogue.shows.length ? `<div class="podcast-grid">${this.catalogue.shows.filter(s=>s.title.toLowerCase().includes(query)).map(s=>`<article class="podcast-card"><div class="podcast-cover">◉</div><button class="podcast-title" data-podcast-show="${s.id}"><strong>${esc(s.title)}</strong><small>${esc(s.author || s.owner.name)}</small></button><p>${this.episodes(s).length} episodes · ${esc(s.owner.name)}</p><button class="icon-button" data-podcast-settings="${s.id}" aria-label="Settings for ${esc(s.title)}">⚙</button></article>`).join('')}</div>` : `<div class="empty-filter"><span>◉</span><h2>Good company, on repeat.</h2><p>Import Apple Podcasts links or a Castamatic subscription list.<br>Its episodes will appear across your paired devices.</p></div>`);
+      target.innerHTML = `<div class="podcast-toolbar"><button class="secondary" data-agent-settings>Audio agent</button><button class="primary" data-podcast-subscribe>＋ Subscribe</button></div>` + (this.catalogue.shows.length ? `<div class="podcast-grid">${this.catalogue.shows.filter(s=>s.title.toLowerCase().includes(query)).map(s=>`<article class="podcast-card"><div class="podcast-cover">◉${cover(s.artwork_url)}</div><button class="podcast-title" data-podcast-show="${s.id}"><strong>${esc(s.title)}</strong><small>${esc(s.author || s.owner.name)}</small></button><p>${this.episodes(s).length} episodes · ${esc(s.owner.name)}</p><button class="icon-button" data-podcast-settings="${s.id}" aria-label="Settings for ${esc(s.title)}">⚙</button></article>`).join('')}</div>` : `<div class="empty-filter"><span>◉</span><h2>Good company, on repeat.</h2><p>Import Apple Podcasts links or a Castamatic subscription list.<br>Its episodes will appear across your paired devices.</p></div>`);
+      for (const image of target.querySelectorAll('.podcast-cover img')) image.onerror = () => image.remove();
       return;
     }
     const episodes = this.episodes(show).filter(e=>e.title.toLowerCase().includes(query));

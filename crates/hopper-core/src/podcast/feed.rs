@@ -24,9 +24,28 @@ fn value(n: Node<'_, '_>, tag: &str) -> String {
         .collect()
 }
 fn resolved(base: &Url, value: Option<&str>) -> Option<String> {
-    let u = base.join(value?).ok()?;
+    let raw = value?.trim();
+    if raw.is_empty() {
+        return None;
+    }
+    let u = base.join(raw).ok()?;
     matches!(u.scheme(), "http" | "https").then(|| u.to_string())
 }
+fn cover(node: Node<'_, '_>, base: &Url) -> Option<String> {
+    node.children()
+        .filter(|n| n.is_element() && n.tag_name().name() == "image")
+        .find_map(|n| {
+            resolved(base, n.attribute("href"))
+                .or_else(|| resolved(base, child(n, "url").and_then(|n| n.text())))
+        })
+        .or_else(|| {
+            let images = child(node, "images")?.attribute("srcset")?;
+            images
+                .split(',')
+                .find_map(|entry| resolved(base, entry.split_whitespace().next()))
+        })
+}
+
 pub fn seconds(text: &str) -> Option<f64> {
     let mut total = 0.0;
     for p in text.trim().replace(',', ".").split(':') {
@@ -44,13 +63,7 @@ pub fn parse(xml: &str, base: &str, show_id: &str) -> Result<ParsedFeed> {
     let base = Url::parse(base)?;
     let title = value(channel, "title");
     ensure!(!title.is_empty(), "podcast feed has no title");
-    let artwork = channel
-        .children()
-        .filter(|n| n.is_element() && n.tag_name().name() == "image")
-        .find_map(|n| {
-            resolved(&base, n.attribute("href"))
-                .or_else(|| resolved(&base, child(n, "url").and_then(|n| n.text())))
-        });
+    let artwork = cover(channel, &base);
     let mut episodes = vec![];
     let mut seen = std::collections::HashSet::new();
     for (index, item) in channel
@@ -100,6 +113,8 @@ pub fn parse(xml: &str, base: &str, show_id: &str) -> Result<ParsedFeed> {
                     title: n.attribute("title").unwrap_or("Chapter").into(),
                     start: seconds(n.attribute("start")?)?,
                     end: None,
+                    artwork_url: resolved(&base, n.attribute("image")),
+                    hidden: false,
                 })
             })
             .collect();
@@ -129,6 +144,7 @@ pub fn parse(xml: &str, base: &str, show_id: &str) -> Result<ParsedFeed> {
             mime,
             published,
             duration: seconds(&value(item, "duration")),
+            artwork_url: cover(item, &base),
             chapters_url: chapter.and_then(|n| resolved(&base, n.attribute("url"))),
             transcript_url: transcript.and_then(|n| resolved(&base, n.attribute("url"))),
             transcript_type: transcript

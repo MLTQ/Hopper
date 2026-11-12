@@ -10,3 +10,5 @@ HOPPER_DATA_DIR optionally selects an isolated library for development. Closing 
 hosting; use hopper-node on an always-on machine for continuous availability.
 
 The shell supplies a native asynchronous folder chooser to the embedded node. A cancellation returns an empty selection.
+
+Folder copy and folder sharing use the same native directory chooser.

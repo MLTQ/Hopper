@@ -193,7 +193,12 @@ mod tests {
         let store = Store::open(&db).unwrap();
         let folders = store.imported_folders().unwrap();
         assert_eq!(folders.len(), 2);
-        assert!(folders.iter().any(|f| f.name == root.to_string_lossy()));
+        let canonical_root = root.canonicalize().unwrap();
+        assert!(
+            folders
+                .iter()
+                .any(|f| f.name == canonical_root.to_string_lossy())
+        );
         let copied = folders.iter().find(|f| f.name == "Copied").unwrap();
         let mut delivery = json!({"payload":{"kind":"media","id":id}, "state":"waiting"});
         store.put("delivery", "first", &delivery).unwrap();

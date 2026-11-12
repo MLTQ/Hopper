@@ -21,3 +21,5 @@ library refreshes and dialogs retain the existing player instance.
 The Add and Folders screens open the shared-folder manager. The Pair a device dialog uses pairing.js for QR generation, expiry and text invitations.
 
 Folders refreshes the added-folder list on entry and library reload. If a selected logical folder disappears, the collection returns to All folders.
+
+Native Copy a folder requests a directory picker and a managed copy. The Folders view persists the current path, shows immediate children and pages long lists. Large new libraries initially open in Folders.

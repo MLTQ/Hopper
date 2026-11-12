@@ -7,6 +7,10 @@ pub struct Chapter {
     pub title: String,
     pub start: f64,
     pub end: Option<f64>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub artwork_url: Option<String>,
+    #[serde(default, skip_serializing_if = "std::ops::Not::not")]
+    pub hidden: bool,
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]

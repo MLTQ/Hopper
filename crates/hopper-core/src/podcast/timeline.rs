@@ -137,6 +137,8 @@ pub fn chapters(chapters: &[Chapter], spans: &[Span], source_duration: f64) -> V
             let end = map_time(end, spans);
             (end > start && start < duration(spans)).then(|| Chapter {
                 title: c.title.clone(),
+                artwork_url: c.artwork_url.clone(),
+                hidden: c.hidden,
                 start,
                 end: Some(end),
             })

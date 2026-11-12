@@ -16,3 +16,5 @@ Desktop FFmpeg tools resolve through media_tools, including standard macOS Homeb
 Import reports include successful item IDs so local API callers can queue verified Home deliveries.
 
 Recursive path imports record the selected root separately from each item’s logical folder. Publishing verified managed bytes reuses an identical existing blob so other source records retain their modification timestamp.
+
+Native folder copies preserve relative directory names and publish content-hashed files from temporary storage. Managed copies and referenced folder traversals share file filtering.

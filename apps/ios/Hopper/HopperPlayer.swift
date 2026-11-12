@@ -14,7 +14,16 @@ final class HopperPlayer: ObservableObject {
     @Published var playing = false
     @Published var loading = false
     @Published var rate: Float = 1 { didSet { if playing { engine.rate = rate }; nowPlaying() } }
-    private let client: HopperClient
+    let client: HopperClient
+    @Published var playbackCover: UIImage?
+    @Published var supplementalChapters: [Chapter]?
+    var systemCover: MPMediaItemArtwork?
+    var artworkRequest: [String] = []
+    var artworkMedia: String?
+    var chapterRequest: [String] = []
+    var artworkTask: Task<Void, Never>?
+    var chapterTask: Task<Void, Never>?
+
     private let journal: PlaybackJournal
     private var observation: NSKeyValueObservation?
     private var statusObservation: NSKeyValueObservation?
@@ -31,8 +40,8 @@ final class HopperPlayer: ObservableObject {
     private var needsFill = false
     private var queueRevision = UUID()
 
-    var current: MediaItem? { client.library.items.first { $0.id == currentId } }
-    var queuedItems: [MediaItem] { queue.compactMap { id in client.library.items.first { $0.id == id } } }
+    var current: MediaItem? { currentId.flatMap { client.mediaById[$0] } }
+    var queuedItems: [MediaItem] { queue.compactMap { client.mediaById[$0] } }
 
     init(client: HopperClient) {
         self.client = client; journal = PlaybackJournal(client: client)
@@ -81,6 +90,7 @@ final class HopperPlayer: ObservableObject {
         let saved = UserDefaults.standard.data(forKey: "hopper-queue").flatMap { try? JSONDecoder().decode(QueueState.self, from: $0) } ?? client.library.queue
         queue = saved.items; currentId = saved.current
         position = current?.progress?.position ?? 0; duration = current?.duration ?? 0
+        if let current { updateArtwork(for: current) }
     }
     func play(_ item: MediaItem) async {
         checkpoint(); engine.pause()
@@ -125,7 +135,7 @@ final class HopperPlayer: ObservableObject {
         Task { await play(item) }
     }
     func enqueue(_ item: MediaItem) { if !queue.contains(item.id) { queue.append(item.id); persistQueue(); Task { await fillQueue() } } }
-    func playAll(_ items: [MediaItem]) { queue = items.map(\.id); if let first = items.first { Task { await play(first) } } else { persistQueue() } }
+    func playAll(_ items: [MediaItem], startingAt selected: MediaItem? = nil) { queue = items.map(\.id); if let first = selected ?? items.first { Task { await play(first) } } else { persistQueue() } }
     func remove(at offsets: IndexSet) {
         let visible = queuedItems
         let removed = Set(offsets.compactMap { visible.indices.contains($0) ? visible[$0].id : nil })
@@ -189,12 +199,14 @@ final class HopperPlayer: ObservableObject {
             do { let _: Ack = try await self.client.post("queue", state) } catch { self.client.error = error.localizedDescription }
         }
     }
-    private func nowPlaying() {
+    func nowPlaying() {
         guard let item = current else { MPNowPlayingInfoCenter.default().nowPlayingInfo = nil; return }
+        updateArtwork(for: item)
         var info: [String: Any] = [MPMediaItemPropertyTitle: item.title, MPMediaItemPropertyArtist: item.creator,
             MPMediaItemPropertyAlbumTitle: item.album, MPNowPlayingInfoPropertyElapsedPlaybackTime: position,
             MPNowPlayingInfoPropertyPlaybackRate: playing ? rate : 0, MPNowPlayingInfoPropertyDefaultPlaybackRate: rate,
             MPNowPlayingInfoPropertyMediaType: item.kind == "video" ? MPNowPlayingInfoMediaType.video.rawValue : MPNowPlayingInfoMediaType.audio.rawValue]
+        if let systemCover { info[MPMediaItemPropertyArtwork] = systemCover }
         if duration > 0 { info[MPMediaItemPropertyPlaybackDuration] = duration }
         MPNowPlayingInfoCenter.default().nowPlayingInfo = info
     }

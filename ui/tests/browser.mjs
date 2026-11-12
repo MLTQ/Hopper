@@ -19,20 +19,32 @@ const library = { device, peers: [], items, queue: { items: items.slice(0, 3).ma
   hosts: [{ device, desktop: true, online: true }], jobs: [], episodes: [],
   shows: ['The Quiet Hours', 'Good Things Take Time', 'Outside, Together'].map((title, i) => ({ id: `show-${i}`, title, author: 'Hopper studio', owner: device })),
 } };
-let failRefresh = false;
+let failRefresh = false, queued;
 const server = createServer(async (request, response) => {
   const path = new URL(request.url, 'http://localhost').pathname;
   if (path === '/favicon.ico') { response.writeHead(204); response.end(); return; }
   if (path.startsWith('/api/')) {
     response.setHeader('Content-Type', 'application/json');
+    if (path === '/api/queue' && request.method === 'POST') {
+      let body = ''; for await (const chunk of request) body += chunk; queued = JSON.parse(body);
+    }
+    if (path.startsWith('/api/play/')) { response.end(JSON.stringify({path: '/test-audio.wav'})); return; }
     if (path === '/api/refresh' && failRefresh) { response.writeHead(400); response.end(JSON.stringify({ error: 'Preview connection unavailable' })); return; }
-    response.end(JSON.stringify(path === '/api/library' || path === '/api/refresh' ? library : {})); return;
+    response.end(JSON.stringify(path === '/api/library' || path === '/api/refresh' ? library : path === '/api/folders' ? {folders: [], imports: [], can_choose: true} : {})); return;
+  }
+  if (path === '/test-audio.wav') {
+    const wav = Buffer.alloc(44 + 16000);
+    wav.write('RIFF'); wav.writeUInt32LE(wav.length - 8, 4); wav.write('WAVEfmt ', 8);
+    wav.writeUInt32LE(16, 16); wav.writeUInt16LE(1, 20); wav.writeUInt16LE(1, 22);
+    wav.writeUInt32LE(8000, 24); wav.writeUInt32LE(16000, 28); wav.writeUInt16LE(2, 32);
+    wav.writeUInt16LE(16, 34); wav.write('data', 36); wav.writeUInt32LE(16000, 40);
+    response.writeHead(200, {'Content-Type': 'audio/wav'}); response.end(wav); return;
   }
   const file = path === '/' ? 'index.html' : path.slice(1);
   if (!/^[a-z-]+\.(html|js|css)$/.test(file)) { response.writeHead(404); response.end(); return; }
   try {
     response.setHeader('Content-Type', file.endsWith('.js') ? 'text/javascript' : file.endsWith('.css') ? 'text/css' : 'text/html');
-    response.setHeader('Content-Security-Policy', "default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; media-src 'self' blob:; connect-src 'self'; frame-ancestors 'none'; base-uri 'none'");
+    response.setHeader('Content-Security-Policy', "default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data: https: http:; media-src 'self' blob:; connect-src 'self'; frame-ancestors 'none'; base-uri 'none'");
     response.end(await readFile(join(ui, file)));
   } catch { response.writeHead(404); response.end(); }
 });
@@ -135,6 +147,32 @@ try {
   await waitFor(() => evaluate("document.querySelectorAll('.media-row').length === 4"), 'background-window startup');
   assert.equal(await evaluate("document.querySelectorAll('.sidebar.glass-surface,.queue-panel.glass-surface,.player.glass-surface').length"), 3);
   assert.equal(await evaluate("document.documentElement.dataset.theme"), 'light');
+  library.items = Array.from({ length: 4800 }, (_, index) => ({
+    ...items[0], id: index.toString(16).padStart(64, '0'), title: `Episode ${index % 120 + 1}`,
+    folder: `Archive/Plot ${Math.floor(index / 240) + 1}/Season ${Math.floor(index / 120) % 2 + 1}`,
+    progress: null
+  }));
+  await call('Page.reload');
+  await waitFor(() => evaluate("document.getElementById('library-count').textContent === '4800'"), 'large library');
+  await evaluate("document.querySelector('[data-view=folders]').click()");
+  await waitFor(() => evaluate("!!document.querySelector('[data-folder=Archive]')"), 'large folder library');
+  assert.equal(await evaluate("document.querySelectorAll('.media-row').length"), 0);
+  await evaluate("document.querySelector('[data-folder=Archive]').click()");
+  await waitFor(() => evaluate("document.querySelectorAll('.folder-children button').length === 20"), 'plotlines');
+  await evaluate("document.querySelector('[data-folder=\"Archive/Plot 2\"]').click()");
+  await waitFor(() => evaluate("document.querySelectorAll('.folder-children button').length === 2"), 'seasons');
+  await evaluate("document.querySelector('[data-folder=\"Archive/Plot 2/Season 1\"]').click()");
+  await waitFor(() => evaluate("document.querySelectorAll('.media-row').length === 100"), 'bounded episode list');
+  await evaluate("document.querySelector('[data-more]').click()");
+  await waitFor(() => evaluate("document.querySelectorAll('.media-row').length === 120"), 'remaining episodes');
+  assert.equal(await evaluate("document.querySelector('.media-row strong').textContent"), 'Episode 1');
+  await screenshot('nested-archive');
+  const season = library.items.filter(item => item.folder === 'Archive/Plot 2/Season 1');
+  await evaluate("document.querySelectorAll('.media-row .media-main')[5].click()");
+  await waitFor(() => queued?.current === season[5].id, 'starting at the selected episode');
+  assert.deepEqual(queued.items, season.map(item => item.id), 'folder playback must exclude sibling plotlines and seasons');
+  await evaluate("document.getElementById('next').click()");
+  await waitFor(() => queued?.current === season[6].id, 'next episode in the same season');
   assert.deepEqual(errors, [], `Browser errors: ${errors.join(', ')}`);
   console.log(`Browser checks passed. Screenshots: ${output}`);
 } finally {

@@ -10,3 +10,5 @@ Media IDs are content hashes, sources indicate replicas, and only local+online i
 offline. Queue is per-device. ProgressBody is also the durable pending-checkpoint representation.
 
 Library now decodes optional Home and delivery status fields.
+
+Playable chapter entries accept optional artwork URLs and hidden artwork markers from newer hosts.

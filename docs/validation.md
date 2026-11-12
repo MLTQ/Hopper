@@ -143,3 +143,17 @@ accessibility walkthroughs are tracked in hopper-tqd; existing platform/device r
 - Headless Chromium drove the Folders view against a real, isolated Hopper node. An empty share, a nested reference import and two folder uploads appeared with their counts. Cancel preserved the entry. After removing overlapping entries, the remaining copy served the original bytes. Removing the final entry persisted across reload and preserved the source file.
 - The existing Chromium UI checks, JavaScript material tests, Rust formatting and core Clippy checks passed. Other desktop operating systems and iOS were not exercised for this change.
 - Installed the rebuilt release through the existing per-user launcher. Opened Folders in native WebKitGTK and verified the Remove action on the upgraded library. All removal tests used temporary media.
+
+## Archive browsing and podcast presentation — November 12, 2026
+
+- The desktop browser fixture contains 4,800 episodes in 20 plotlines, each with two 120-episode
+  seasons. It checks drill-down, numeric ordering, paging, and queueing only that season.
+- After combining the folder manager and browser, all 16 Rust checks passed and the macOS desktop
+  app bundled successfully.
+- In a temporary node, the publisher’s No Agenda episode “Spillover” returned its show cover and
+  17 timed chapters with images. Verified valid bytes for the cover and the first chapter image,
+  and repeated the chapter request from cache. The paired podcast fixture also verifies that
+  images and hidden markers survive ad-cut time remapping.
+- Installed the signed update on Iris (iPhone 15 Pro Max); launch was deferred by the lock screen.
+  The archive itself is on a different desktop. Its actual import, on-phone chapter transitions,
+  and listening through that archive were not observed in this check.

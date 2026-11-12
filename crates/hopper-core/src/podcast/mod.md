@@ -8,3 +8,5 @@ iOS can browse/play and submit jobs to a desktop, but never launches an agent or
 Agent configuration is separate from analysis adapters; llm handles actual bounded audio input.
 
 intake parses OPML and resolves supported share links for the Home delivery receiver.
+
+The chapter reader is shared by owner preparation and on-demand original chapter recovery.

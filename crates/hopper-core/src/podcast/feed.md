@@ -9,3 +9,5 @@ GUIDs collapse. The service archives original XML for future namespace support.
 WebVTT and SRT transcripts become timestamped cues. Unsupported formats are recorded as warnings,
 never exported with stale timestamps as if they had been remapped. Podcast JSON chapter documents
 retain unknown fields when the service downloads them. Tests exercise namespaces and time parsing.
+
+Channel and episode artwork accept image href, RSS image/url and images srcset. Inline chapter image URLs resolve against the feed.

@@ -255,7 +255,13 @@ impl Node {
         }
         for root in self.0.folders.roots.read().unwrap().values() {
             for (id, file) in &root.files {
-                if !files.get(id).is_some_and(import::available) && accessible(file) {
+                if let Some(existing) = files.get_mut(id)
+                    && import::available(existing)
+                {
+                    if existing.media.folder.is_empty() && accessible(file) {
+                        existing.media.folder.clone_from(&file.media.folder);
+                    }
+                } else if accessible(file) {
                     files.insert(id.clone(), file.clone());
                 }
             }

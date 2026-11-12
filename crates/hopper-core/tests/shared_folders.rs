@@ -215,3 +215,36 @@ async fn removing_a_folder_import_keeps_duplicate_sources_and_originals() {
     }
     host.close().await;
 }
+
+#[tokio::test]
+async fn native_folder_copy_retains_nested_paths_after_source_moves() {
+    let tmp = tempfile::tempdir().unwrap();
+    let root = tmp.path().join("Archive");
+    let plot = root.join("Plot").join("Season 2");
+    std::fs::create_dir_all(&plot).unwrap();
+    std::fs::write(plot.join("Episode 2.wav"), b"archived episode").unwrap();
+    let (host, hello) = start(tmp.path(), "Mac").await;
+    let selected = root.clone();
+    host.set_folder_picker(Box::new(move || {
+        let selected = selected.clone();
+        Box::pin(async move { Some(selected) })
+    }));
+    let response = reqwest::Client::new()
+        .post(format!("http://127.0.0.1:{}/api/import/folder", hello.port))
+        .bearer_auth(&hello.token)
+        .json(&serde_json::json!({}))
+        .send()
+        .await
+        .unwrap()
+        .error_for_status()
+        .unwrap();
+    let report = response.json::<Value>().await.unwrap();
+    assert_eq!(report["added"], 1);
+    assert_eq!(report["folder"], "Archive");
+    std::fs::rename(&root, tmp.path().join("Moved")).unwrap();
+    assert_eq!(
+        host.snapshot().unwrap().items[0].folder,
+        "Archive/Plot/Season 2"
+    );
+    host.close().await;
+}

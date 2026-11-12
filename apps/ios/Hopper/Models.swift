@@ -6,6 +6,7 @@ struct Source: Decodable { let deviceId: String; let name: String; let local: Bo
 struct Peer: Decodable, Identifiable { let id: String; let name: String; let online: Bool; let error: String? }
 struct Chapter: Decodable, Identifiable {
     let title: String; let start: Double; let end: Double?
+    let artworkUrl: String?; let hidden: Bool?
     var id: String { "\(start)-\(title)" }
 }
 struct MediaProgress: Decodable {

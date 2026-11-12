@@ -15,7 +15,7 @@ fn main() {
             node.set_folder_picker(Box::new(|| {
                 Box::pin(async {
                     rfd::AsyncFileDialog::new()
-                        .set_title("Share a folder with your paired devices")
+                        .set_title("Choose a media folder")
                         .pick_folder()
                         .await
                         .map(|file| file.path().to_path_buf())

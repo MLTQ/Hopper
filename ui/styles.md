@@ -17,3 +17,5 @@ of truth for spacing, radii, typography and responsive geometry.
 The pairing code has a white background, square aspect and responsive width so the phone camera can read the complete quiet zone.
 
 Added-folder rows wrap long paths and keep their Remove control visible.
+
+Folder rows lay out immediate children and counts. Show covers crop publisher artwork to the card.

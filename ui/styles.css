@@ -48,3 +48,16 @@ dialog{border:1px solid #e0e5d5;border-radius:13px;padding:25px;width:490px;max-
 #added-folders strong { font-size: 13px; }
 #added-folders small, #added-folders p { display: block; color: var(--muted); font-size: 12px; margin: 4px 0 0; }
 #added-folders button { flex-shrink: 0; }
+
+.folder-children { flex-basis: 100%; display: grid; grid-template-columns: repeat(auto-fill,minmax(190px,1fr)); gap: 8px; }
+.folder-children button { text-align: left; overflow-wrap: anywhere; }
+.folder-children small { opacity: .7; }
+
+.podcast-cover { position: relative; overflow: hidden; }
+.podcast-cover img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+
+.intro.browsing-folders { padding-block: 18px; }
+.browsing-folders .eyebrow, .browsing-folders #view-description { display: none; }
+
+#player-art { position: relative; overflow: hidden; }
+#player-art img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }

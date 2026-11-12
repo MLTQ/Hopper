@@ -3,7 +3,25 @@ import UIKit
 
 @MainActor
 final class HopperClient: ObservableObject {
-    @Published var library = Library.empty
+    let artwork = PodcastArtworkStore()
+    private(set) var episodesByMedia: [String: PodcastEpisode] = [:]
+    private(set) var showsById: [String: PodcastShow] = [:]
+    private(set) var mediaById: [String: MediaItem] = [:]
+    @Published var library = Library.empty {
+        didSet {
+            mediaById = Dictionary(library.items.map { ($0.id, $0) }, uniquingKeysWith: { first, _ in first })
+            showsById = Dictionary(podcasts.shows.map { ($0.id, $0) }, uniquingKeysWith: { first, _ in first })
+            episodesByMedia.removeAll(keepingCapacity: true)
+            for episode in podcasts.episodes {
+                if let id = episode.originalId { episodesByMedia[id] = episode }
+                if let id = episode.cleanedId { episodesByMedia[id] = episode }
+            }
+        }
+    }
+    func coverURLs(for episode: PodcastEpisode?) -> [String] {
+        guard let episode else { return [] }
+        return [episode.artworkUrl, showsById[episode.showId]?.artworkUrl].compactMap { $0 }
+    }
     @Published var ready = false
     @Published var error: String?
     @Published var working = false

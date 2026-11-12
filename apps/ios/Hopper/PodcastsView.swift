@@ -6,7 +6,6 @@ struct PodcastsView: View {
     var body: some View {
         NavigationStack {
             List {
-                DeliverySection()
                 if client.podcasts.shows.isEmpty {
                     VStack(spacing: 18) {
                         Image(systemName: "dot.radiowaves.left.and.right").font(.largeTitle)
@@ -18,7 +17,7 @@ struct PodcastsView: View {
                 ForEach(client.podcasts.shows) { show in
                     NavigationLink { PodcastShowView(showId: show.id) } label: {
                         HStack(spacing: 16) {
-                            Image(systemName: "mic.fill").font(.title).frame(width: 58, height: 58).background(HopperTheme.surface).cornerRadius(10).foregroundColor(HopperTheme.forest)
+                            PodcastCover(urls: [show.artworkUrl].compactMap { $0 }, size: 58) { HopperTheme.surface.overlay(Image(systemName: "mic.fill")) }
                             VStack(alignment: .leading, spacing: 5) {
                                 Text(show.title).font(.headline)
                                 Text(show.author.isEmpty ? show.owner.name : show.author).font(.caption).foregroundColor(HopperTheme.muted)
@@ -48,14 +47,20 @@ struct PodcastShowView: View {
             if let show {
                 List {
                     Section {
-                        Text(show.author).font(.headline)
+                        HStack(spacing: 16) {
+                            PodcastCover(urls: [show.artworkUrl].compactMap { $0 }, size: 90) { HopperTheme.surface.overlay(Image(systemName: "mic.fill")) }
+                            Text(show.author).font(.headline)
+                        }
                         Text(show.description).font(.subheadline).foregroundColor(HopperTheme.muted).lineLimit(5)
                         Text("Library on \(show.owner.name)").font(.caption).foregroundColor(HopperTheme.muted)
                         if let error = show.error { Text(error).font(.caption).foregroundColor(.orange) }
                     }.listRowBackground(HopperTheme.background)
                     ForEach(client.podcasts.episodes(for: show)) { episode in
                         VStack(alignment: .leading, spacing: 10) {
-                            Text(episode.title).font(.headline)
+                            HStack {
+                                if episode.artworkUrl != nil { PodcastCover(urls: client.coverURLs(for: episode), size: 46) { HopperTheme.surface } }
+                                Text(episode.title).font(.headline)
+                            }
                             HStack { if episode.published > 0 { Text(Date(timeIntervalSince1970: Double(episode.published)), style: .date) }; if let duration = episode.duration { Text(mediaTime(duration)) } }.font(.caption).foregroundColor(HopperTheme.muted)
                             if let job = client.podcasts.job(for: episode) {
                                 Text(job.message + (job.removedSeconds > 0 ? " · \(mediaTime(job.removedSeconds)) removed" : "")).font(.caption).foregroundColor(job.state == "failed" ? .orange : HopperTheme.forest)

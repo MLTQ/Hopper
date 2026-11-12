@@ -83,11 +83,11 @@ json.dump({'source_hash':r['source_hash'],'duration':r['duration'],'segments':[
     let listener = tokio::net::TcpListener::bind("127.0.0.1:0").await.unwrap();
     let base = format!("http://{}", listener.local_addr().unwrap());
     let feed = format!(
-        r#"<rss xmlns:podcast="https://podcastindex.org/namespace/1.0"><channel><title>Fixture show</title><description>A test feed</description><item><title>Episode one</title><guid>stable-1</guid><enclosure url="{base}/audio" type="audio/wav"/><podcast:chapters url="{base}/chapters" type="application/json+chapters"/><podcast:transcript url="{base}/transcript" type="text/vtt"/><podcast:soundbite startTime="4" duration="2">Story</podcast:soundbite></item></channel></rss>"#
+        r#"<rss xmlns:podcast="https://podcastindex.org/namespace/1.0"><channel><title>Fixture show</title><image><url>/show.png</url></image><description>A test feed</description><item><title>Episode one</title><podcast:image href="/episode.png"/><guid>stable-1</guid><enclosure url="{base}/audio" type="audio/wav"/><podcast:chapters url="{base}/chapters" type="application/json+chapters"/><podcast:transcript url="{base}/transcript" type="text/vtt"/><podcast:soundbite startTime="4" duration="2">Story</podcast:soundbite></item></channel></rss>"#
     );
     let app=axum::Router::new().route("/feed",axum::routing::get(move||{let feed=feed.clone();async move{feed}}))
         .route("/audio",axum::routing::get(move||{let source=source.clone();async move{source}}))
-        .route("/chapters",axum::routing::get(||async{axum::Json(json!({"version":"1.2.0","chapters":[{"startTime":0,"title":"Opening"},{"startTime":2,"title":"Ad"},{"startTime":4,"title":"Story","img":"https://example.com/story.png"}]}))}))
+        .route("/chapters",axum::routing::get(||async{axum::Json(json!({"version":"1.2.0","chapters":[{"startTime":0,"title":"Opening"},{"startTime":2,"title":"Ad"},{"startTime":4,"title":"Story","img":"story.png","toc":false}]}))}))
         .route("/transcript",axum::routing::get(||async{"WEBVTT\n\n00:00:01.000 --> 00:00:02.000\nHello\n\n00:00:02.000 --> 00:00:04.000\nAd\n\n00:00:04.000 --> 00:00:06.000\nStory\n"}));
     let server = tokio::spawn(async move { axum::serve(listener, app).await.unwrap() });
     let host = node(&desktop, "Podcast desktop").await;
@@ -107,6 +107,14 @@ json.dump({'source_hash':r['source_hash'],'duration':r['duration'],'segments':[
     let lib = phone.library().unwrap();
     assert_eq!(lib.podcasts.shows.len(), 1);
     let episode = lib.podcasts.episodes[0].clone();
+    assert_eq!(
+        lib.podcasts.shows[0].artwork_url.as_deref(),
+        Some(format!("{base}/show.png").as_str())
+    );
+    assert_eq!(
+        episode.artwork_url.as_deref(),
+        Some(format!("{base}/episode.png").as_str())
+    );
     phone
         .podcast_command(
             &owner,
@@ -182,6 +190,11 @@ json.dump({'source_hash':r['source_hash'],'duration':r['duration'],'segments':[
         .find(|i| Some(&i.media.id) == job.output_id.as_ref())
         .unwrap();
     assert_eq!(clean.media.chapters[1].start, 2.0);
+    assert_eq!(
+        clean.media.chapters[1].artwork_url.as_deref(),
+        Some(format!("{base}/story.png").as_str())
+    );
+    assert!(clean.media.chapters[1].hidden);
     assert_eq!(clean.progress.as_ref().unwrap().position, 5.0);
     let original =
         std::fs::read(desktop.join("media").join(format!("{original_hash}.wav"))).unwrap();

@@ -19,3 +19,5 @@ Fixture IDs deliberately vary their leading bytes so every artwork palette is re
   this verifies the guard, not actual WebKit rasterization).
 - Complete initial material even when background-window animation frames are suspended.
 - Browser exceptions and console errors fail the run. Screenshots require visual review separately.
+
+An additional 4,800-item fixture drills into a plotline and season and verifies bounded episode rendering, starting at the selected episode, the saved queue, and advancing within the season.

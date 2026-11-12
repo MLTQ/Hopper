@@ -25,3 +25,5 @@ These are presentation-only assets; no appearance preferences or backdrop pixels
 The authenticated folder routes manage local registrations and invoke a picker supplied by the desktop shell. The QR route renders a one-use invitation locally. The pairing and folder UI modules are bundled assets.
 
 GET /api/folders includes imported roots. DELETE /api/imported-folders/:id removes one local import group. Multipart folder names come from the browser’s relative filename.
+
+The native folder-copy endpoint invokes the shell picker. Original chapter lookup is restricted to catalogued episode IDs. A bearer-protected binary endpoint fetches bounded artwork without forwarding credentials.

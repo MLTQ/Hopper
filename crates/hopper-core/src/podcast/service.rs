@@ -339,29 +339,8 @@ impl Node {
         })
         .await??;
         if let Some(url) = &episode.chapters_url {
-            match fetch::document(url)
-                .await
-                .and_then(|(_, b)| Ok(serde_json::from_slice::<serde_json::Value>(&b)?))
-            {
-                Ok(doc) => {
-                    let chapters: Vec<Chapter> = doc
-                        .get("chapters")
-                        .and_then(|v| v.as_array())
-                        .into_iter()
-                        .flatten()
-                        .filter_map(|v| {
-                            Some(Chapter {
-                                title: v
-                                    .get("title")
-                                    .and_then(|v| v.as_str())
-                                    .unwrap_or("Chapter")
-                                    .into(),
-                                start: v.get("startTime")?.as_f64()?,
-                                end: v.get("endTime").and_then(|v| v.as_f64()),
-                            })
-                        })
-                        .filter(|c| c.start.is_finite() && c.start >= 0.0)
-                        .collect();
+            match super::chapters::download(url).await {
+                Ok((doc, chapters)) => {
                     episode.chapters = chapters;
                     episode.chapter_document = Some(doc);
                 }
