@@ -7,8 +7,9 @@ struct SharedPodcast: Codable, Identifiable {
 }
 enum ShareInbox {
     static let group = "group.app.hopper.player"
+    static var container: URL? { FileManager.default.containerURL(forSecurityApplicationGroupIdentifier: group) }
     static func folder() throws -> URL {
-        guard let root = FileManager.default.containerURL(forSecurityApplicationGroupIdentifier: group) else {
+        guard let root = container else {
             throw failure("Hopper sharing is not configured. Open Hopper and paste a podcast link or import an OPML file.")
         }
         let url = root.appendingPathComponent("PodcastInbox", isDirectory: true)
@@ -25,7 +26,8 @@ enum ShareInbox {
         try JSONEncoder().encode(item).write(to: root.appendingPathComponent(item.id + ".json"), options: .atomic)
     }
     static func pending() throws -> [(URL, SharedPodcast)] {
-        try FileManager.default.contentsOfDirectory(at: folder(), includingPropertiesForKeys: nil).filter { $0.pathExtension == "json" }.sorted { $0.lastPathComponent < $1.lastPathComponent }.map { url in
+        guard container != nil else { return [] }
+        return try FileManager.default.contentsOfDirectory(at: folder(), includingPropertiesForKeys: nil).filter { $0.pathExtension == "json" }.sorted { $0.lastPathComponent < $1.lastPathComponent }.map { url in
             let data = try boundedData(url, limit: 16 * 1024 * 1024)
             return (url, try JSONDecoder().decode(SharedPodcast.self, from: data))
         }

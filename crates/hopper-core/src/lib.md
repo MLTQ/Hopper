@@ -26,3 +26,7 @@ Owns Home delivery wake/serialization and a durable sender worker. Local librari
 
 Node.import routes successful IDs to a remote Home after local import, so headless and UI imports
 share the same behavior. Delivery staging failures stay visible in ImportReport.errors.
+
+Shared-folder indexes contribute available local media to both the library and the peer catalogue. Desktop startup schedules periodic rescans.
+
+Desktop shells derive their default device label from the machine name. Device identity still comes from its persisted key.

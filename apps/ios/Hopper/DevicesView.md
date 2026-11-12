@@ -11,3 +11,5 @@ HomeSection chooses a paired desktop, including offline hosts; DeliverySection s
 
 AppearanceSection provides separate device-local light/dark glass tint sliders. The list uses
 the shared scene behind solid system rows; pairing and Home ownership are unaffected.
+
+Scan pairing QR code opens the native camera sheet. A successful scan uses the same pairing request as a pasted invitation. Previously paired desktops remain in the list.

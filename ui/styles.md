@@ -13,3 +13,5 @@ errors/waiting state remain visible alongside an episode's original/playable var
 
 Shared glass, adaptive ink and appearance colors live in material.css. This file remains the source
 of truth for spacing, radii, typography and responsive geometry.
+
+The pairing code has a white background, square aspect and responsive width so the phone camera can read the complete quiet zone.

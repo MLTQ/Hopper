@@ -1,5 +1,6 @@
 mod delivery_worker;
 mod ffi;
+pub mod folders;
 pub mod home;
 mod http;
 pub mod import;
@@ -34,6 +35,22 @@ pub struct Config {
 }
 
 impl Config {
+    /// Finder launches and non-interactive Linux sessions may have no HOSTNAME variable.
+    pub fn desktop_name() -> String {
+        let env_name = std::env::var("COMPUTERNAME")
+            .or_else(|_| std::env::var("HOSTNAME"))
+            .ok();
+        let name = env_name.filter(|s| !s.trim().is_empty()).or_else(|| {
+            let output = std::process::Command::new("hostname").output().ok()?;
+            output
+                .status
+                .success()
+                .then(|| String::from_utf8_lossy(&output.stdout).trim().to_owned())
+        });
+        name.filter(|s| !s.is_empty() && s.len() <= 100)
+            .unwrap_or_else(|| "My desktop".into())
+    }
+
     pub fn desktop(name: String) -> Result<Self> {
         let dir = directories::ProjectDirs::from("app", "Hopper", "Hopper")
             .context("could not locate application support directory")?;
@@ -63,6 +80,7 @@ pub struct Node(Arc<Inner>);
 
 struct Inner {
     store: Store,
+    folders: folders::SharedFolders,
     endpoint: Endpoint,
     device: Device,
     dir: PathBuf,
@@ -150,8 +168,11 @@ impl Node {
             id: endpoint.id().to_string(),
             name: config.name,
         };
+        let store = Store::open(&config.data_dir.join("library.sqlite"))?;
+        let folders = folders::SharedFolders::open(&store)?;
         let node = Self(Arc::new(Inner {
-            store: Store::open(&config.data_dir.join("library.sqlite"))?,
+            store,
+            folders,
             endpoint,
             device: device.clone(),
             dir: config.data_dir,
@@ -171,6 +192,7 @@ impl Node {
             _lock: lock,
         }));
         node.start_accepting();
+        node.start_folder_scans();
         node.start_podcasts();
         node.start_deliveries();
         let port = http::serve(node.clone()).await?;
@@ -200,9 +222,7 @@ impl Node {
 
     pub fn snapshot(&self) -> Result<Snapshot> {
         let items = self
-            .0
-            .store
-            .all::<LocalMedia>("local")?
+            .local_files()?
             .into_iter()
             .filter(import::available)
             .map(|l| l.media)
@@ -225,7 +245,7 @@ impl Node {
             agent_available: podcasts.agent_available,
         });
         let mut items = BTreeMap::<String, LibraryItem>::new();
-        for local in self.0.store.all::<LocalMedia>("local")? {
+        for local in self.local_files()? {
             let online = import::available(&local);
             let source = Source {
                 device_id: self.0.device.id.clone(),

@@ -21,3 +21,5 @@ POST /home selects a paired desktop; /add-podcasts queues Apple/RSS/OPML imports
 
 The loopback UI also serves material.css, glass.js and glass-lens.js through the same asset headers.
 These are presentation-only assets; no appearance preferences or backdrop pixels enter the API.
+
+The authenticated folder routes manage local registrations and invoke a picker supplied by the desktop shell. The QR route renders a one-use invitation locally. The pairing and folder UI modules are bundled assets.

@@ -10,3 +10,5 @@ file importer uses explicit user-selected URLs. Details show all advertised sour
 
 HopperTheme is defined in HopperTheme.swift. Library/detail backgrounds use its local scene;
 library rows stay solid for reading. Artwork retains dark ink over its fixed pale palette.
+
+The empty library offers a pairing scan. The folder menu beside Play all filters the combined catalogue, including parent folders whose episodes all live in subfolders. Selecting a parent includes its descendants.

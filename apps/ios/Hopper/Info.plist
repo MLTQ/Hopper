@@ -13,6 +13,7 @@
 <key>LSRequiresIPhoneOS</key><true/>
 <key>UIBackgroundModes</key><array><string>audio</string></array>
 <key>NSAppTransportSecurity</key><dict><key>NSAllowsLocalNetworking</key><true/></dict>
+<key>NSCameraUsageDescription</key><string>Scan a pairing code from your Hopper desktop.</string>
 <key>NSLocalNetworkUsageDescription</key><string>Hopper connects to your paired desktops to browse and play your media.</string>
 <key>UILaunchScreen</key><dict/>
 <key>UISupportedInterfaceOrientations</key><array><string>UIInterfaceOrientationPortrait</string><string>UIInterfaceOrientationLandscapeLeft</string><string>UIInterfaceOrientationLandscapeRight</string></array>

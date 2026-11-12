@@ -76,12 +76,7 @@ impl Node {
         length: u64,
     ) -> Result<MediaReader> {
         ensure!(valid_id(id), "invalid media ID");
-        if let Some(local) = self
-            .0
-            .store
-            .get::<LocalMedia>("local", id)?
-            .filter(import::available)
-        {
+        if let Some(local) = self.local_file(id)? {
             ensure!(
                 offset < local.media.bytes && length <= local.media.bytes - offset,
                 "invalid range"

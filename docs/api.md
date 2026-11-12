@@ -9,6 +9,12 @@ Origin must match the node origin. JSON uses snake_case. No peer receives this c
 | GET | /api/library | Device, merged items/sources/progress, paired status, local queue |
 | POST | /api/refresh | Exchange catalogue/progress with paired nodes, return library |
 | POST | /api/invite | `{code, expires_in}`; one-use, ten-minute invitation |
+| POST | /api/invite/qr | Return the invitation, its ten-minute lifetime and a locally rendered SVG data URL |
+| GET | /api/folders | Local share registrations with file counts, warnings and native picker availability |
+| POST | /api/folders | Register and index an absolute desktop folder supplied as `{path}` |
+| POST | /api/folders/choose | Ask the desktop shell to pick and share a folder. Cancellation returns null |
+| POST | /api/folders/:id/rescan | Reconcile a registered folder immediately |
+| DELETE | /api/folders/:id | Stop sharing this folder and keep the original files |
 | POST | /api/pair | `{code}`; persist mutual trust and fetch peer library |
 | DELETE | /api/peers/:id | Remove local trust and peer catalogue; retain downloaded copies |
 | POST | /api/import | `{paths:[...]}` local paths; return `{added,skipped,errors}` |

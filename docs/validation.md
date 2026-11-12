@@ -1,6 +1,6 @@
 # Validation record
 
-This file records observed checks, not target-platform promises. Updated November 4, 2026.
+This file records observed checks, not target-platform promises. Updated November 12, 2026.
 
 ## Automated checks already passed
 - Rust core unit tests: byte-range edge cases and Lamport progress convergence/rewind semantics.
@@ -103,3 +103,24 @@ CI now installs FFmpeg/Python for these tests, but no remote CI run has been per
 
 See [material scope and changed files](liquid-glass.md). Native material contrast/performance and
 accessibility walkthroughs are tracked in hopper-tqd; existing platform/device release gates remain.
+
+## QR pairing and shared folders — November 12, 2026
+
+- Installed and launched a signed debug build on a connected iPhone 15 Pro Max. On macOS,
+  Hopper's native folder picker opened the temporary archive and its library showed the generated
+  17-second spoken AAC episode. The desktop displayed a one-use QR. The user confirmed playback
+  on the iPhone, the Mac displayed the paired phone online, and the phone's completed playback
+  checkpoint reached the desktop at 17.14 seconds. The sample was hosted by reference.
+- Two independent desktop nodes paired with one player in the integration suite. Tests cover
+  nested logical folders, authenticated QR issuance, replay rejection, seeking with verified range
+  bytes, indexing new files, unsharing without deleting originals, and playback from a second
+  source. A second test covers restart and temporary archive disconnection.
+- The macOS app bundle, arm64 iOS core builds, and a simulator build including the share
+  extension passed. All 13 Rust tests passed across the suite and targeted rerun. Clippy with
+  warnings denied, formatting, desktop JavaScript syntax and diff whitespace checks passed.
+- The connected iPhone's development profiles lacked the App Group used by podcast share-sheet
+  imports. The installed pairing build used a local signing override. The project retains both
+  App Group entitlements. Provisioning and share-sheet testing are tracked in hopper-lky.13.
+- This was a foreground listening check on one physical Mac and iPhone. Multiple physical
+  desktops, Linux and Windows runtime behavior, long background playback, and network handoff
+  still need device checks.

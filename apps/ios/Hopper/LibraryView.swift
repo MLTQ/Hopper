@@ -41,10 +41,22 @@ struct LibraryView: View {
     @State private var folder = ""
     @State private var importing = false
     @State private var detail: MediaItem?
+    private var folders: [String] {
+        var paths = Set<String>()
+        for item in client.library.items {
+            var path = ""
+            for part in item.folder.split(separator: "/") {
+                path = path.isEmpty ? String(part) : path + "/" + part
+                paths.insert(path)
+            }
+        }
+        return paths.sorted { $0.localizedStandardCompare($1) == .orderedAscending }
+    }
+
     private var items: [MediaItem] {
         client.library.items.filter { item in
             (filter == "all" || item.kind == filter || filter == "continue" && (item.progress?.position ?? 0) > 0 && item.progress?.completed == false)
-            && (folder.isEmpty || item.folder == folder)
+            && (folder.isEmpty || item.folder == folder || item.folder.hasPrefix(folder + "/"))
             && (search.isEmpty || "\(item.title) \(item.creator) \(item.folder)".localizedCaseInsensitiveContains(search))
         }.sorted { $0.title.localizedStandardCompare($1.title) == .orderedAscending }
     }
@@ -64,8 +76,9 @@ struct LibraryView: View {
                     VStack(spacing: 18) {
                         Image(systemName: "tray.and.arrow.down").font(.system(size: 47, weight: .ultraLight)).foregroundColor(HopperTheme.muted)
                         Text("Good things go in here.").font(.system(size: 23, design: .serif))
-                        Text("Pair a desktop in Devices to bring its collection along. Or add a file from this iPhone.").font(.subheadline).foregroundColor(HopperTheme.muted).multilineTextAlignment(.center)
-                        Button("Add a file") { importing = true }.buttonStyle(.borderedProminent)
+                        Text("Scan the invitation on your desktop to play its shared media.").font(.subheadline).foregroundColor(HopperTheme.muted).multilineTextAlignment(.center)
+                        ScanPairButton().buttonStyle(.borderedProminent)
+                        Button("Add a file") { importing = true }
                     }.frame(maxWidth: .infinity).padding(.vertical, 40).listRowBackground(HopperTheme.background).listRowSeparator(.hidden)
                 } else {
                     Section {
@@ -83,7 +96,16 @@ struct LibraryView: View {
                                 }
                         }
                     } header: {
-                        HStack { Text("\(items.count) items"); Spacer(); Button("Play all") { player.playAll(items) } }
+                        HStack {
+                            Menu {
+                                Button("All folders") { folder = "" }
+                                ForEach(folders, id: \.self) { path in
+                                    Button(path) { folder = path }
+                                }
+                            } label: { Label(folder.isEmpty ? "All folders" : folder, systemImage: "folder") }
+                            Spacer()
+                            Button("Play all") { player.playAll(items) }.disabled(items.isEmpty)
+                        }
                     }
                 }
             }
@@ -95,7 +117,6 @@ struct LibraryView: View {
                 ToolbarItem(placement: .navigationBarLeading) {
                     Menu {
                         Picker("Collection", selection: $filter) { Text("Everything").tag("all"); Text("Continue listening").tag("continue"); Text("Audiobooks").tag("audiobook"); Text("Audio").tag("audio"); Text("Video").tag("video") }
-                        Picker("Folder", selection: $folder) { Text("All folders").tag(""); ForEach(Array(Set(client.library.items.map(\.folder).filter { !$0.isEmpty })).sorted(), id: \.self) { Text($0).tag($0) } }
                     } label: { Image(systemName: "line.3.horizontal.decrease") }.accessibilityLabel("Filter library")
                 }
                 ToolbarItem(placement: .navigationBarTrailing) { Button { importing = true } label: { Image(systemName: "plus") }.disabled(!client.ready).accessibilityLabel("Add media") }

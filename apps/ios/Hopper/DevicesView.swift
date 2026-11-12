@@ -23,13 +23,19 @@ struct DevicesView: View {
                     }
                 } header: { Text("Your devices") } footer: { Text("Pair directly with each desktop you want to access. Keep it running to stream, or download a copy to listen offline.") }
                 Section {
+                    ScanPairButton()
+                    if client.working { ProgressView("Connecting…") }
+                } header: { Text("Pair a desktop") } footer: {
+                    Text("On the desktop, open Pair a device and create an invitation. Scan each desktop to add its library.")
+                }
+                Section {
                     TextEditor(text: $code).frame(minHeight: 90).font(.system(.caption, design: .monospaced)).autocorrectionDisabled().textInputAutocapitalization(.never)
                     HStack {
                         PasteButton(payloadType: String.self) { values in if let value = values.first { code = value } }
                         Spacer()
                         Button { Task { await client.pair(code); if client.error == nil { code = "" } } } label: { if client.working { ProgressView() } else { Text("Pair device") } }.buttonStyle(.borderedProminent).disabled(code.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || client.working || !client.ready)
                     }
-                } header: { Text("Paste an invitation") } footer: { Text("On your desktop, choose Pair a device → Create invitation. Pairing shares Hopper media and listening progress between these devices.") }
+                } header: { Text("Paste an invitation") } footer: { Text("On your desktop, choose Pair a device → Create pairing QR code. Pairing shares Hopper media and listening progress between these devices.") }
                 Section {
                     Button { Task { creating = true; defer { creating = false }; do { let result: Invite = try await client.post("invite", EmptyBody()); invitation = result.code } catch { client.error = error.localizedDescription } } } label: { if creating { ProgressView() } else { Label("Create an invitation", systemImage: "link") } }.disabled(!client.ready || creating)
                     if let invitation {
