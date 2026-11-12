@@ -163,3 +163,17 @@ accessibility walkthroughs are tracked in hopper-tqd; existing platform/device r
   563 archive items in two subfolders (488 and 75), matching the two directories on disk.
   Opened the archive and its 75-item branch in the native UI and verified that it showed episode
   playback buttons. No playback or phone streaming was started during this deployment check.
+
+## Phone playback and automatic downloads — November 12, 2026
+
+- The paired iPhone’s saved LAN port differed from the live Omarchy endpoint after the desktop
+  restarted. The updated desktop and phone reused their existing pairing for the listening check.
+- A signed diagnostic build on the physical iPhone started a 6.4 MB archive episode through the
+  native player, advanced beyond two seconds, and paused. The library reported a verified automatic
+  copy. A second play resolved to a local file URL and advanced beyond three seconds.
+- All 18 Rust tests passed. Paired-node coverage exercised an obsolete LAN port, concurrent requests,
+  restart, completion, replay, the 30-day boundary and preservation of an explicit keep and the
+  desktop original. The interrupted-transfer recovery check also passed. Workspace Clippy and
+  both Apple core builds passed. A macOS bundle and a signed regular iPhone app were built.
+- The handset check covered foreground playback. The long background and network handoff matrix
+  remains tracked separately. The expiry boundary was exercised with a controlled clock.
