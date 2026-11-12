@@ -157,3 +157,9 @@ accessibility walkthroughs are tracked in hopper-tqd; existing platform/device r
 - Installed the signed update on Iris (iPhone 15 Pro Max); launch was deferred by the lock screen.
   The archive itself is on a different desktop. Its actual import, on-phone chapter transitions,
   and listening through that archive were not observed in this check.
+- On the Omarchy archive desktop, built revision `8a3a8ee` in release mode and updated the
+  executable used by the existing Wayland launcher. Verified that the mapped WebKitGTK window
+  used the new executable and served the updated folder browser. The existing catalogue contained
+  563 archive items in two subfolders (488 and 75), matching the two directories on disk.
+  Opened the archive and its 75-item branch in the native UI and verified that it showed episode
+  playback buttons. No playback or phone streaming was started during this deployment check.
