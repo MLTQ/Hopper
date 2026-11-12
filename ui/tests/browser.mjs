@@ -19,12 +19,23 @@ const library = { device, peers: [], items, queue: { items: items.slice(0, 3).ma
   hosts: [{ device, desktop: true, online: true }], jobs: [], episodes: [],
   shows: ['The Quiet Hours', 'Good Things Take Time', 'Outside, Together'].map((title, i) => ({ id: `show-${i}`, title, author: 'Hopper studio', owner: device })),
 } };
-let failRefresh = false, queued;
+let failRefresh = false, queued, directorySubscription;
 const server = createServer(async (request, response) => {
   const path = new URL(request.url, 'http://localhost').pathname;
   if (path === '/favicon.ico') { response.writeHead(204); response.end(); return; }
   if (path.startsWith('/api/')) {
     response.setHeader('Content-Type', 'application/json');
+    if (path === '/api/podcasts/directory') {
+      let body = ''; for await (const chunk of request) body += chunk;
+      const {term, category, provider} = JSON.parse(body);
+      response.end(JSON.stringify({categories:[{id:'1',name:'Fiction'}], shows:[{
+        title:[provider,category,term].filter(Boolean).join(' · '), author:'Adventure crew', url:'https://example.org/feed', artwork:null,
+      }]})); return;
+    }
+    if (path === '/api/add-podcasts') {
+      let body=''; for await (const chunk of request) body+=chunk;
+      directorySubscription=JSON.parse(body); response.end(JSON.stringify({delivery_ids:['test'],warnings:[]})); return;
+    }
     if (path === '/api/queue' && request.method === 'POST') {
       let body = ''; for await (const chunk of request) body += chunk; queued = JSON.parse(body);
     }
@@ -104,6 +115,16 @@ try {
   await evaluate("document.querySelector('[data-view=podcasts]').click()");
   await waitFor(() => evaluate("[...document.querySelectorAll('.podcast-card')].every(e => e.style.getPropertyValue('--glass-lens'))"), 'podcast lenses');
   await screenshot('podcasts-dark');
+  await evaluate("document.querySelector('[data-podcast-browse]').click()");
+  await waitFor(() => evaluate("document.querySelector('.directory-row strong')?.textContent === 'apple'"), 'default Apple chart');
+  await evaluate("{const f=document.getElementById('directory-search'); f.elements.provider.value='podcast_index'; f.elements.provider.dispatchEvent(new Event('change'))}");
+  await waitFor(() => evaluate("document.querySelector('.directory-row strong')?.textContent === 'podcast_index'"), 'Podcast Index chart');
+  await evaluate("{const f=document.getElementById('directory-search'); f.elements.term.value='dragons'; f.elements.category.value='1'; f.requestSubmit()}");
+  await waitFor(() => evaluate("document.querySelector('.directory-row strong')?.textContent === 'podcast_index · 1 · dragons'"), 'filtered directory search');
+  await evaluate("document.querySelector('[data-listing]').click()");
+  await waitFor(() => directorySubscription?.url === 'https://example.org/feed', 'directory subscription');
+  assert.equal(directorySubscription.owner_id, device.id);
+  await evaluate("document.getElementById('dialog').close()");
   assert.equal(await evaluate("new Set([...document.querySelectorAll('.podcast-card')].map(e=>e.dataset.glassInk)).size"), 1);
   // Dialogs are deliberately excluded from SVG refraction.
   await evaluate("document.getElementById('appearance').click()");

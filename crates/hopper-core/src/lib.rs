@@ -98,6 +98,7 @@ struct Inner {
     shutdown: tokio_util::sync::CancellationToken,
     podcast_commands: tokio::sync::Mutex<()>,
     podcast_downloads: tokio::sync::Mutex<()>,
+    index_categories: tokio::sync::OnceCell<Vec<podcast::directory::Category>>,
     podcast_wake: tokio::sync::Notify,
     delivery_wake: tokio::sync::Notify,
     deliveries: tokio::sync::Mutex<()>,
@@ -183,6 +184,7 @@ impl Node {
             shutdown: Default::default(),
             podcast_commands: Default::default(),
             podcast_downloads: Default::default(),
+            index_categories: Default::default(),
             podcast_wake: Default::default(),
             delivery_wake: Default::default(),
             deliveries: Default::default(),
@@ -320,6 +322,7 @@ impl Node {
                     .cmp(&b.media.title.to_lowercase()),
             )
         });
+        podcasts.sort_by_latest_episode();
         Ok(Library {
             device: self.0.device.clone(),
             home: self.home_device()?,

@@ -10,3 +10,5 @@ Job statuses come from the core. Missing agent configuration is explicitly shown
 Audio agent opens the local setup dialog; a remotely owned show directs setup to its desktop.
 
 The show grid loads publisher cover images and leaves delivery receipts in Devices.
+
+Browse opens directory discovery. Each episode has its own cut form. A one-episode cut leaves the show defaults and future-episode policy intact.

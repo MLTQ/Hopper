@@ -10,6 +10,7 @@ struct CutOptions: Codable {
 struct PodcastShow: Decodable, Identifiable {
     let id: String; let owner: Device; let title: String; let author: String; let description: String
     let artworkUrl: String?
+    let feedUrl: String?
     let newestFirst: Bool; let cutOptions: CutOptions; let error: String?
 }
 struct PodcastEpisode: Decodable, Identifiable {

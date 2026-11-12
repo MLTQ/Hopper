@@ -177,3 +177,10 @@ accessibility walkthroughs are tracked in hopper-tqd; existing platform/device r
   both Apple core builds passed. A macOS bundle and a signed regular iPhone app were built.
 - The handset check covered foreground playback. The long background and network handoff matrix
   remains tracked separately. The expiry boundary was exercised with a controlled clock.
+
+## Podcast discovery and single-episode cuts — November 12, 2026
+
+- An isolated Hopper node fetched 25 live US Fiction chart entries from Apple, 40 results for “actual play”, and 36 results with Fiction selected. Every returned listing had a cover URL.
+- The desktop browser test switched between Apple and Podcast Index, submitted a search with a category and queued the chosen feed for its desktop using fixture responses. Verified Podcast Index’s documented response shapes, signature construction, and missing-credentials state. An authenticated live Podcast Index account was unavailable.
+- Core tests check merged show recency with undated and tied shows. A paired client requested a single-episode cut with its own fade setting. The owner rendered with FFmpeg, retained the original and show defaults, and remapped metadata and playback position. Classification used a fixture agent.
+- Built the macOS app and both iOS core targets. The signed iPhone app was installed on Iris with the existing development signing configuration. Physical interaction with the discovery screen and Windows builds were not checked.

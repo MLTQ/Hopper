@@ -49,6 +49,8 @@ pub(crate) async fn serve(node: Node) -> Result<u16> {
         .route("/pair", post(pair))
         .route("/peers/:id", delete(unpair))
         .route("/import/folder", post(copy_folder))
+        .route("/podcasts/directory", post(directory))
+        .route("/podcasts/directory/keys", post(directory_keys))
         .route("/podcasts/artwork", post(podcast_artwork))
         .route("/podcasts/chapters/:id", get(original_chapters))
         .route("/import", post(import_paths))
@@ -177,6 +179,15 @@ pub(crate) async fn serve(node: Node) -> Result<u16> {
             }),
         )
         .route(
+            "/directory.js",
+            get(|| async {
+                asset(
+                    "text/javascript; charset=utf-8",
+                    include_str!("../../../ui/directory.js"),
+                )
+            }),
+        )
+        .route(
             "/podcasts.js",
             get(|| async {
                 asset(
@@ -232,6 +243,29 @@ async fn authenticate(State(node): State<Node>, request: Request, next: Next) ->
 async fn library(State(node): State<Node>) -> Api<Library> {
     Ok(Json(node.library()?))
 }
+#[derive(Deserialize)]
+struct DirectoryInput {
+    #[serde(flatten)]
+    query: crate::podcast::directory::Query,
+    owner_id: Option<String>,
+}
+async fn directory(
+    State(node): State<Node>,
+    Json(input): Json<DirectoryInput>,
+) -> Api<crate::podcast::directory::Page> {
+    Ok(Json(
+        node.directory_page(input.query, input.owner_id.as_deref())
+            .await?,
+    ))
+}
+async fn directory_keys(
+    State(node): State<Node>,
+    Json(keys): Json<crate::podcast::directory::Keys>,
+) -> Api<Value> {
+    node.save_index_keys(keys)?;
+    Ok(Json(json!({"ok": true})))
+}
+
 #[derive(Deserialize)]
 struct PodcastInput {
     owner_id: String,

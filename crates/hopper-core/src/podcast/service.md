@@ -16,3 +16,5 @@ Batch cuts check existing jobs/options before creating any jobs, avoiding partia
 Publishing a downloaded episode reuses an existing identical managed file so overlapping library folder sources keep their valid timestamps.
 
 External chapter parsing retains image URLs and silent markers on playable original media.
+
+CutEpisode queues a single episode of a followed show on its owner and leaves saved show preferences and automatic processing intact.

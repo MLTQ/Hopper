@@ -11,7 +11,7 @@ struct PodcastsView: View {
                         Image(systemName: "dot.radiowaves.left.and.right").font(.largeTitle)
                         Text("Good company, on repeat.").font(.system(size: 26, design: .serif))
                         Text("Import an Apple Podcasts link or a Castamatic subscription list. Its episodes will appear across your paired devices.").font(.subheadline).multilineTextAlignment(.center)
-                        Button("Subscribe to a podcast") { subscribing = true }.buttonStyle(.borderedProminent)
+                        NavigationLink("Browse podcasts") { PodcastDirectoryView() }.buttonStyle(.borderedProminent)
                     }.foregroundColor(HopperTheme.forest).padding(.vertical, 55).frame(maxWidth: .infinity).listRowBackground(HopperTheme.background).listRowSeparator(.hidden)
                 }
                 ForEach(client.podcasts.shows) { show in
@@ -26,7 +26,10 @@ struct PodcastsView: View {
                     }.listRowBackground(HopperTheme.background)
                 }
             }.listStyle(.plain).scrollContentBackground(.hidden).hopperScene()
-                .navigationTitle("Podcasts").toolbar { Button { subscribing = true } label: { Image(systemName: "plus") }.accessibilityLabel("Subscribe to a podcast") }
+                .navigationTitle("Podcasts").toolbar {
+                    NavigationLink { PodcastDirectoryView() } label: { Image(systemName: "magnifyingglass") }.accessibilityLabel("Browse podcasts")
+                    Button { subscribing = true } label: { Image(systemName: "plus") }.accessibilityLabel("Import a podcast link or subscription list")
+                }
                 .refreshable { await client.refresh(sync: true) }
                 .sheet(isPresented: $subscribing) { SubscribePodcastView() }
         }
@@ -40,6 +43,7 @@ struct PodcastShowView: View {
     @Environment(\.dismiss) var dismiss
     @State private var settings = false
     @State private var cutting = false
+    @State private var cutEpisode: PodcastEpisode?
     @State private var preparing: String?
     private var show: PodcastShow? { client.podcasts.shows.first { $0.id == showId } }
     var body: some View {
@@ -72,6 +76,7 @@ struct PodcastShowView: View {
                                 Button(episode.playableId == nil ? "Get & play" : "Play") { play(episode, show: show) }.buttonStyle(.borderedProminent)
                                 Button("Queue") { play(episode, show: show, enqueue: true) }.buttonStyle(.bordered)
                                 if episode.cleanedId != nil && episode.cleanedId != episode.originalId { Button("Original") { play(episode, show: show, original: true) }.font(.caption) }
+                                if client.podcasts.job(for: episode)?.active != true { Button("Cut ads") { cutEpisode = episode }.buttonStyle(.borderless) }
                                 if preparing == episode.id { ProgressView() }
                             }.disabled(preparing != nil)
                         }.padding(.vertical, 8).listRowBackground(HopperTheme.background)
@@ -86,6 +91,7 @@ struct PodcastShowView: View {
                         } label: { Image(systemName: "ellipsis.circle") }.accessibilityLabel("Podcast settings")
                     }
                     .sheet(isPresented: $settings) { PodcastSettingsView(show: show) }
+                    .sheet(item: $cutEpisode) { episode in CutAdsView(show: show, episode: episode) }
                     .sheet(isPresented: $cutting) { CutAdsView(show: show) }
                     .refreshable { action(PodcastCommand(ownerId: show.owner.id, action: "refresh", showId: show.id)) }
             } else { Text("This show is no longer followed.").foregroundColor(HopperTheme.muted) }

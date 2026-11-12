@@ -96,3 +96,9 @@ and third-party client integrations require evaluation separately from determini
 Cross-platform source/build workflows do not substitute for actual Windows/Linux/device testing.
 
 One-time desktop folder imports have separate local source memberships, keyed by the referenced root path or the browser-supplied top-level name. Removing a membership changes the local catalogue and keeps the physical files. Shared roots, other imports, offline copies and peer sources can continue providing the same content ID.
+
+## Podcast discovery
+
+Both shells use the same directory adapters and durable subscription intake. Apple requests originate on the browsing device. Podcast Index queries travel over the paired connection to the selected desktop, which signs HTTPS requests using private local credentials. Directory browsing is read-only. Subscribing explicitly queues one URL for that desktop.
+
+The merged subscription library orders shows by latest episode publication, including cached peer episodes. A single-episode cut takes its own job options and leaves the default policy for future episodes intact.

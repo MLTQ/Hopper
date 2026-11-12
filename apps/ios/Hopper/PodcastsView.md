@@ -12,3 +12,5 @@ Show/library backgrounds use hopperScene while episode rows remain solid for leg
 Semantic warnings and processing errors retain their original colors.
 
 Podcasts opens on subscriptions. Import activity lives in Devices. Show and episode covers use publisher artwork when available.
+
+The magnifying glass opens directory browsing. An episode’s Cut ads action opens its own settings sheet.

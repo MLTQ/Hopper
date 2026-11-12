@@ -29,3 +29,5 @@ Paired Deliver requests dispatch to desktop Home intake. Only IDs published in t
 Peer reads resolve an advertised ID to an available local import or registered shared-folder file. Only logical folder names appear in snapshots.
 
 Paired snapshot exchanges carry optional current address hints. Updates must match the authenticated peer and cannot recreate a removed pairing.
+
+Paired Directory requests run on the receiving desktop against the fixed Podcast Index API. Directory requests cannot configure its credentials.

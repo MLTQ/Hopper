@@ -1,8 +1,8 @@
 # Audio agents and podcast cuts
 
-Subscribe from **Podcasts → Subscribe** using an RSS feed URL. Choose the desktop that owns the
+Subscribe from **Podcasts → Browse podcasts** or import an RSS link. Choose the desktop that owns the
 show. On that desktop, open **Podcasts → Audio agent** to configure processing. On any paired device,
-open the show's settings → **Cut ads**, choose preferences and a backlog, and start. New releases
+tap **Cut ads** on one episode to try the edit. This runs only that episode with its own preferences. For a backlog, open the show’s settings → **Cut ads**. New releases
 are cleaned automatically only if you enable that option. The owner must remain running.
 
 Install **FFmpeg and FFprobe** on the processing desktop's PATH. Hopper also checks standard Homebrew locations on macOS so Finder-launched apps
@@ -97,9 +97,9 @@ Chapter timing, chapter JSON image/link fields, WebVTT/SRT cues, soundbites and 
 mapped through the same edit timeline. Chapter JSON/transcript results and the edit timeline remain
 in the private job manifest. The app uses remapped chapters; source container chapters are stripped
 from the M4A rather than leaving stale times. Exporting embedded chapters and a cleaned RSS feed,
-full Podcasting 2.0 coverage, and displaying chapter artwork are still follow-up work.
+and full Podcasting 2.0 coverage are still follow-up work. The player uses available chapter artwork.
 
-Current subscriptions require an RSS URL; directory search/OPML is not yet implemented. The first
+Apple Podcasts and Podcast Index discovery, direct RSS, Apple show links, and OPML imports use the same desktop subscription flow. The first
 play downloads an episode to its owning desktop before playback. Live streams are not edited.
 Cut ads currently handles audio episodes. UI and integration tests use synthetic fixtures; real
 model accuracy, long-episode costs, and third-party agent compatibility need separate evaluation.

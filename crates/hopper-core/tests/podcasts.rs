@@ -94,6 +94,24 @@ json.dump({'source_hash':r['source_hash'],'duration':r['duration'],'segments':[
     let phone = node(&root.path().join("phone"), "Listener").await;
     phone.pair(&host.invite().await.unwrap()).await.unwrap();
     let owner = host.library().unwrap().device.id;
+    // A directory request must reach the chosen owner, even when the phone itself has no credentials.
+    std::fs::write(
+        desktop.join("podcast-index.json"),
+        b"invalid test configuration",
+    )
+    .unwrap();
+    let query = serde_json::from_value(json!({"provider":"podcast_index"})).unwrap();
+    let error = phone
+        .directory_page(query, Some(&owner))
+        .await
+        .err()
+        .expect("desktop configuration error");
+    assert!(
+        error
+            .to_string()
+            .contains("Re-enter the Podcast Index credentials"),
+        "{error}"
+    );
     let result = phone
         .podcast_command(
             &owner,
@@ -140,14 +158,22 @@ json.dump({'source_hash':r['source_hash'],'duration':r['duration'],'segments':[
     let started = phone
         .podcast_command(
             &owner,
-            Command::Cut {
-                show_id: show_id.clone(),
-                episode_ids: vec![episode.id.clone()],
-                options: CutOptions::default(),
+            Command::CutEpisode {
+                episode_id: episode.id.clone(),
+                options: CutOptions {
+                    fade_ms: 25,
+                    ..Default::default()
+                },
             },
         )
         .await
         .unwrap();
+    assert_eq!(
+        host.podcast_catalogue().unwrap().shows[0]
+            .cut_options
+            .fade_ms,
+        20
+    );
     let job_id = &started.job_ids[0];
     let job = tokio::time::timeout(Duration::from_secs(30), async {
         loop {

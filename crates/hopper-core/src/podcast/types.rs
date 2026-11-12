@@ -167,6 +167,10 @@ pub enum Command {
     Download {
         episode_id: String,
     },
+    CutEpisode {
+        episode_id: String,
+        options: CutOptions,
+    },
     Cut {
         show_id: String,
         episode_ids: Vec<String>,
@@ -187,6 +191,23 @@ pub struct CommandResult {
 }
 
 impl Catalogue {
+    pub(crate) fn sort_by_latest_episode(&mut self) {
+        let mut newest = std::collections::HashMap::<&str, i64>::new();
+        for episode in &self.episodes {
+            if episode.published > 0 {
+                let date = newest.entry(&episode.show_id).or_default();
+                *date = (*date).max(episode.published);
+            }
+        }
+        self.shows.sort_by_cached_key(|show| {
+            (
+                std::cmp::Reverse(newest.get(show.id.as_str()).copied()),
+                show.title.to_lowercase(),
+                show.id.clone(),
+            )
+        });
+    }
+
     /// Player catalogues carry status and references; full editing documents remain on the owner.
     pub(crate) fn for_sharing(mut self) -> Self {
         for episode in &mut self.episodes {
@@ -203,5 +224,60 @@ impl Catalogue {
             job.cleaned_soundbites.clear();
         }
         self
+    }
+}
+
+#[cfg(test)]
+mod recency_tests {
+    use super::*;
+    fn show(id: &str, title: &str, last_checked: u64) -> Show {
+        Show {
+            id: id.into(),
+            title: title.into(),
+            last_checked,
+            updated_at: last_checked,
+            owner: Device {
+                id: id.into(),
+                name: id.into(),
+            },
+            feed_url: format!("https://example.org/{id}"),
+            author: String::new(),
+            description: String::new(),
+            artwork_url: None,
+            newest_first: false,
+            cut_options: Default::default(),
+            followed: true,
+            error: None,
+        }
+    }
+    #[test]
+    fn merged_shows_sort_by_max_episode_date_across_owners() {
+        let mut catalogue = Catalogue {
+            shows: vec![
+                show("old", "Old", 9900),
+                show("undated", "A", 9999),
+                show("new", "Z", 10),
+                show("tie", "B", 30),
+            ],
+            ..Default::default()
+        };
+        for (id, date) in [("new", 300), ("old", 100), ("new", 7), ("tie", 300)] {
+            let feed = r#"<rss><channel><title>X</title><item><title>Episode</title><guid>x</guid><enclosure url="https://example.org/episode.mp3" type="audio/mpeg"/></item></channel></rss>"#;
+            let mut episode = crate::podcast::feed::parse(feed, "https://example.org/rss", id)
+                .unwrap()
+                .episodes
+                .remove(0);
+            episode.published = date;
+            catalogue.episodes.push(episode);
+        }
+        catalogue.sort_by_latest_episode();
+        assert_eq!(
+            catalogue
+                .shows
+                .iter()
+                .map(|s| s.id.as_str())
+                .collect::<Vec<_>>(),
+            ["tie", "new", "old", "undated"]
+        );
     }
 }

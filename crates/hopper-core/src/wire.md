@@ -13,3 +13,5 @@ configuration or filesystem paths. Responses return show/media/job IDs; snapshot
 Deliver/Delivered carry typed podcast links or published media IDs and idempotent receipts, never arbitrary paths. A paired sender may add its own Hopper media to a receiving desktop library.
 
 Snapshot requests and responses may include the sender’s current endpoint address. Older peers omit or ignore the optional field.
+
+Directory is a paired, read-only request to run a Podcast Index query on a desktop. The response contains categories and show listings. Credentials never enter the wire protocol.

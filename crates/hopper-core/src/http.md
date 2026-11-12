@@ -29,3 +29,5 @@ GET /api/folders includes imported roots. DELETE /api/imported-folders/:id remov
 The native folder-copy endpoint invokes the shell picker. Original chapter lookup is restricted to catalogued episode IDs. A bearer-protected binary endpoint fetches bounded artwork without forwarding credentials.
 
 The authenticated native-play route resolves a media ID to an available local file or scoped stream. Playback-download returns the verified local path.
+
+POST /api/podcasts/directory reads an Apple chart/search or routes Podcast Index to a selected desktop. POST /api/podcasts/directory/keys accepts a new local desktop key pair and returns only an acknowledgment.

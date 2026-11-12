@@ -333,6 +333,10 @@ impl Node {
             .await
             .insert(conn.remote_id(), conn.clone());
         match request {
+            Request::Directory { query } => {
+                let page = self.local_index_page(&query).await?;
+                wire::write_json(send, &Response::Directory { page }).await?;
+            }
             Request::Deliver { id, payload } => {
                 let receipt = self.receive_delivery(&remote, &id, payload).await?;
                 wire::write_json(send, &Response::Delivered { receipt }).await?;

@@ -126,6 +126,26 @@ impl Node {
                     ..Default::default()
                 })
             }
+            Command::CutEpisode {
+                episode_id,
+                options,
+            } => {
+                ensure!(
+                    !cfg!(target_os = "ios"),
+                    "Cut ads runs on the show's desktop."
+                );
+                options.validate()?;
+                ensure!(
+                    self.show(&self.episode(&episode_id)?.show_id)?.followed,
+                    "Subscribe to this show before cutting an episode."
+                );
+                let id = self.queue_cut(&episode_id, &options)?;
+                self.0.podcast_wake.notify_one();
+                Ok(CommandResult {
+                    job_ids: vec![id],
+                    ..Default::default()
+                })
+            }
             Command::Cut {
                 show_id,
                 episode_ids,

@@ -1,6 +1,8 @@
 import SwiftUI
 
 struct HomeDelivery: Decodable, Identifiable {
+    struct Payload: Decodable { let url: String? }
+    let payload: Payload?
     let id: String; let owner: Device; let label: String; let state: String; let message: String
 }
 struct HomeBody: Encodable { let deviceId: String }

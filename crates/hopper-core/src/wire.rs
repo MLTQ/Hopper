@@ -10,6 +10,9 @@ const MAX_FRAME: usize = 16 * 1024 * 1024;
 #[derive(Serialize, Deserialize)]
 #[serde(tag = "type", rename_all = "snake_case")]
 pub enum Request {
+    Directory {
+        query: crate::podcast::directory::Query,
+    },
     Deliver {
         id: String,
         payload: crate::home::Payload,
@@ -37,6 +40,9 @@ pub enum Request {
 #[derive(Serialize, Deserialize)]
 #[serde(tag = "type", rename_all = "snake_case")]
 pub enum Response {
+    Directory {
+        page: crate::podcast::directory::Page,
+    },
     Delivered {
         receipt: crate::home::Receipt,
     },

@@ -10,3 +10,5 @@ Agent configuration is separate from analysis adapters; llm handles actual bound
 intake parses OPML and resolves supported share links for the Home delivery receiver.
 
 The chapter reader is shared by owner preparation and on-demand original chapter recovery.
+
+The directory module normalizes Apple and Podcast Index listings for both shells.

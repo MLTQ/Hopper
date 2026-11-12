@@ -7,3 +7,5 @@ This verifies integration/rendering, not real-world model ad-recognition accurac
 CI without it explicitly skips rendering coverage. Preserve byte-exact originals and duplicate GUIDs.
 
 The fixture checks episode and show covers, relative chapter artwork and hidden markers after ad removal.
+
+The paired one-episode cut fixture also checks that the owner keeps its saved show preferences. The same paired nodes verify that a Podcast Index request surfaces the owner’s configuration error before any provider call.

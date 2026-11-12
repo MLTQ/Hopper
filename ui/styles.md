@@ -19,3 +19,5 @@ The pairing code has a white background, square aspect and responsive width so t
 Added-folder rows wrap long paths and keep their Remove control visible.
 
 Folder rows lay out immediate children and counts. Show covers crop publisher artwork to the card.
+
+Directory results use compact thumbnail rows with wrapping names and a subscription action.

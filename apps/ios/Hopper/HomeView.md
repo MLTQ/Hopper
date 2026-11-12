@@ -6,3 +6,5 @@ migration. Retry explicitly reschedules failed/waiting work. No phone agent or b
 is implied; the source app must run long enough to transfer pending additions.
 
 The Home setter decodes the returned Library directly. Devices links to a separate Import activity list with failed counts and retry actions.
+
+Outbox rows optionally decode a podcast URL so the directory can display pending subscriptions.
