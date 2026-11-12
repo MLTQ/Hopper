@@ -4,7 +4,7 @@
 Every desktop can add files and play them. The iOS app is a native listener with the same paired
 library. A desktop is not inherently the central server: each device owns its imported media,
 and paired peers exchange catalogues and listening progress. The UI identifies file locations.
-"Keep on this device" makes a verified copy. No automatic deletion or full-library replication.
+"Keep on this device" makes a verified copy. Automatic iPhone playback copies have separate storage and expire on completion or after 30 days.
 
 ## Components
 - `hopper-core`: Rust node, SQLite catalogue, Iroh identity/transport, local authenticated HTTP API.
@@ -29,7 +29,7 @@ Imported paths can be referenced in place; uploads and offline copies are manage
 Source files must remain present and unchanged to be served. Desktop shared folders persist
 as local registrations. A minute scan reconciles files by content ID, using size and modification
 time to reuse unchanged metadata. Each shared source is checked against its canonical path.
-A peer gets logical folder names and media IDs. Stopping a share removes that source, and
+Paired nodes exchange current endpoint addresses during catalogue refresh and try a stable identity-derived UDP port at known LAN addresses after restart. A peer gets logical folder names and media IDs. Stopping a share removes that source, and
 independent imports, other desktops’ sources and downloaded copies keep their own lifetimes.
 
 Catalogues are cached for offline browsing. A catalogue item can have several sources; prefer a

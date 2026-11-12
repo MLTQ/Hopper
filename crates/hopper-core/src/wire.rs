@@ -23,6 +23,8 @@ pub enum Request {
         address: EndpointAddr,
     },
     Snapshot {
+        #[serde(default, skip_serializing_if = "Option::is_none")]
+        address: Option<EndpointAddr>,
         progress: Vec<Progress>,
     },
     Media {
@@ -46,6 +48,8 @@ pub enum Response {
         address: EndpointAddr,
     },
     Snapshot {
+        #[serde(default, skip_serializing_if = "Option::is_none")]
+        address: Option<EndpointAddr>,
         snapshot: Snapshot,
     },
     Media {

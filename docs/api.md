@@ -65,3 +65,5 @@ empty; older peers cannot forward the new podcast commands until upgraded.
 
 Player/peer catalogues carry job statuses, not full decision/transcript documents. Those remain on
 the owner in job manifests. Playable library media retains its original/remapped chapter list.
+
+Authenticated POST /api/native-play/:id returns local_path or the existing relative stream path. POST /api/playback-download/:id returns local_path after a verified automatic copy is available. Local paths never enter peer replies.

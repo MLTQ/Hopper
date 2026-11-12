@@ -17,6 +17,8 @@ struct MediaItem: Decodable, Identifiable {
     let kind: String; let filename: String; let folder: String; let mime: String
     let bytes: UInt64; let duration: Double?; let chapters: [Chapter]
     let sources: [Source]; let progress: MediaProgress?
+    let automaticDownload: Bool?
+    var canKeep: Bool { !isLocal || automaticDownload == true }
     var isLocal: Bool { sources.contains { $0.local && $0.online } }
     var subtitle: String { !creator.isEmpty ? creator : !folder.isEmpty ? folder : filename }
     var symbol: String { kind == "video" ? "play.rectangle.fill" : kind == "audiobook" ? "book.closed.fill" : "waveform" }
@@ -33,7 +35,7 @@ struct Library: Decodable {
 struct APIError: Decodable { let error: String }
 struct Ack: Decodable { let ok: Bool }
 struct Invite: Decodable { let code: String; let expiresIn: Int }
-struct MediaGrant: Decodable { let path: String }
+struct PlaybackLocation: Decodable { let path: String?; let localPath: String? }
 struct PairBody: Encodable { let code: String }
 struct ImportBody: Encodable { let paths: [String] }
 struct ImportReport: Decodable { let added: Int; let skipped: Int; let errors: [String] }

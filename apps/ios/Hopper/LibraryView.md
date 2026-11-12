@@ -14,3 +14,5 @@ library rows stay solid for reading. Artwork retains dark ink over its fixed pal
 The empty library offers a pairing scan. The folder menu beside Play all filters the combined catalogue, including parent folders whose episodes all live in subfolders. Selecting a parent includes its descendants.
 
 Library opens at the folder root. NavigationStack pushes one level per tap. FolderContents keeps sibling shows out of the branch queue. Podcast media uses available publisher artwork.
+
+Media detail keeps the explicit Keep action available for temporary playback downloads.

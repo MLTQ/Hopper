@@ -39,12 +39,12 @@ struct FolderContents: View {
                         .buttonStyle(.plain)
                         .swipeActions(edge: .trailing, allowsFullSwipe: false) {
                             Button { player.enqueue(item) } label: { Label("Queue", systemImage: "text.badge.plus") }
-                            if !item.isLocal { Button { Task { await client.keep(item) } } label: { Label("Keep", systemImage: "arrow.down") }.tint(.orange) }
+                            if item.canKeep { Button { Task { await client.keep(item) } } label: { Label("Keep", systemImage: "arrow.down") }.tint(.orange) }
                         }
                         .contextMenu {
                             Button("Add to queue", systemImage: "text.badge.plus") { player.enqueue(item) }
                             Button("Details & chapters", systemImage: "list.bullet") { detail = item }
-                            if !item.isLocal { Button("Keep on this device", systemImage: "arrow.down.circle") { Task { await client.keep(item) } } }
+                            if item.canKeep { Button("Keep on this device", systemImage: "arrow.down.circle") { Task { await client.keep(item) } } }
                         }
                 }
             } header: {

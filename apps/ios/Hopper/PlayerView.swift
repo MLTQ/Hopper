@@ -20,7 +20,7 @@ struct MiniPlayer: View {
     var body: some View {
         if let item = player.current {
             HStack(spacing: 12) {
-                Button(action: open) { HStack(spacing: 12) { PlayingCover(item: item, size: 40); VStack(alignment: .leading, spacing: 4) { Text(item.title).font(.subheadline.weight(.semibold)).lineLimit(1); Text(player.loading ? "Connecting…" : item.subtitle).font(.caption).foregroundColor(HopperTheme.muted).lineLimit(1) }; Spacer() } }.buttonStyle(.plain)
+                Button(action: open) { HStack(spacing: 12) { PlayingCover(item: item, size: 40); VStack(alignment: .leading, spacing: 4) { Text(item.title).font(.subheadline.weight(.semibold)).lineLimit(1); Text(player.loading ? (player.downloadStatus ?? "Connecting…") : item.subtitle).font(.caption).foregroundColor(HopperTheme.muted).lineLimit(1) }; Spacer() } }.buttonStyle(.plain)
                 Button { player.toggle() } label: { Image(systemName: player.playing ? "pause.fill" : "play.fill").font(.title3).frame(width: 40, height: 40) }.accessibilityLabel(player.playing ? "Pause" : "Play")
                 Button { player.next() } label: { Image(systemName: "forward.end.fill").frame(width: 30, height: 40) }.accessibilityLabel("Next item")
             }.padding(.horizontal, 17).padding(.vertical, 9).hopperGlass()
@@ -55,7 +55,7 @@ struct PlayerView: View {
                         }
                         HStack {
                             Menu { ForEach([Float(0.75), 1, 1.25, 1.5, 1.75, 2], id: \.self) { speed in Button("\(speed.formatted())×") { player.rate = speed } } } label: { Text("\(player.rate.formatted())×").font(.subheadline.weight(.semibold)).padding(10).hopperGlass(radius: 8) }
-                            Spacer(); Text(item.isLocal ? "ON THIS DEVICE" : "STREAMING FROM YOUR DEVICES").font(.system(size: 9)).tracking(1).foregroundColor(HopperTheme.muted)
+                            Spacer(); Text(player.downloadStatus ?? (item.automaticDownload == true ? "Saved until finished or 30 days" : item.isLocal ? "On this device" : "Streaming")).font(.system(size: 9)).tracking(1).foregroundColor(HopperTheme.muted)
                         }
                         if player.playbackChapters.contains(where: { $0.hidden != true }) {
                             VStack(alignment: .leading, spacing: 14) { Text("CHAPTERS").font(.caption).tracking(2).foregroundColor(HopperTheme.muted); ForEach(player.playbackChapters.filter { $0.hidden != true }) { chapter in Button { player.seek(chapter.start) } label: { HStack { Text(chapter.title); Spacer(); Text(mediaTime(chapter.start)).font(.caption) }.padding(.vertical, 9) }; Divider() } }

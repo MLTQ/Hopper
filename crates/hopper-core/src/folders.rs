@@ -228,7 +228,7 @@ impl Node {
         if let Some((_, file)) = self.0.store.imported_file(id)? {
             return Ok(Some(file));
         }
-        Ok(self
+        let shared = self
             .0
             .folders
             .roots
@@ -237,7 +237,11 @@ impl Node {
             .values()
             .filter_map(|folder| folder.files.get(id))
             .find(|file| accessible(file))
-            .cloned())
+            .cloned();
+        if shared.is_some() {
+            return Ok(shared);
+        }
+        self.playback_copy(id)
     }
 
     pub(crate) fn local_files(&self) -> Result<Vec<LocalMedia>> {
@@ -264,6 +268,11 @@ impl Node {
                 } else if accessible(file) {
                     files.insert(id.clone(), file.clone());
                 }
+            }
+        }
+        for file in self.playback_copies()? {
+            if !files.get(&file.media.id).is_some_and(import::available) {
+                files.insert(file.media.id.clone(), file);
             }
         }
         Ok(files.into_values().collect())

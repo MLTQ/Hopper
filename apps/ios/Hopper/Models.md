@@ -12,3 +12,5 @@ offline. Queue is per-device. ProgressBody is also the durable pending-checkpoin
 Library now decodes optional Home and delivery status fields.
 
 Playable chapter entries accept optional artwork URLs and hidden artwork markers from newer hosts.
+
+The local library distinguishes automatic downloads from other local sources. Native playback locations contain either a local file path or a scoped streaming path.

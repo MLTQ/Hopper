@@ -9,13 +9,15 @@ mod media;
 mod media_tools;
 pub mod model;
 mod peer;
+mod peer_address;
+mod playback_cache;
 pub mod podcast;
 mod store;
 mod wire;
 
 use anyhow::{Context, Result};
 use fs2::FileExt;
-use iroh::{Endpoint, SecretKey, endpoint::presets};
+use iroh::{Endpoint, SecretKey};
 use model::*;
 use serde::{Deserialize, Serialize};
 use std::{
@@ -91,6 +93,7 @@ struct Inner {
     connections: tokio::sync::Mutex<HashMap<iroh::EndpointId, iroh::endpoint::Connection>>,
     refreshing: tokio::sync::Mutex<()>,
     downloads: tokio::sync::Mutex<()>,
+    playback_cache: playback_cache::CacheLocks,
     imports: tokio::sync::Mutex<()>,
     shutdown: tokio_util::sync::CancellationToken,
     podcast_commands: tokio::sync::Mutex<()>,
@@ -155,16 +158,7 @@ impl Node {
             file.sync_all()?;
             key
         };
-        let builder = if config.local_only {
-            Endpoint::builder(presets::Minimal)
-        } else {
-            Endpoint::builder(presets::N0)
-        };
-        let endpoint = builder
-            .secret_key(key)
-            .alpns(vec![wire::ALPN.to_vec()])
-            .bind()
-            .await?;
+        let endpoint = peer_address::bind(key, config.local_only).await?;
         let device = Device {
             id: endpoint.id().to_string(),
             name: config.name,
@@ -184,6 +178,7 @@ impl Node {
             connections: Default::default(),
             refreshing: Default::default(),
             downloads: Default::default(),
+            playback_cache: Default::default(),
             imports: Default::default(),
             shutdown: Default::default(),
             podcast_commands: Default::default(),
@@ -193,6 +188,7 @@ impl Node {
             deliveries: Default::default(),
             _lock: lock,
         }));
+        node.recover_playback_cache()?;
         node.start_accepting();
         node.start_folder_scans();
         node.start_podcasts();
@@ -211,7 +207,9 @@ impl Node {
                 if inner.endpoint.is_closed() {
                     break;
                 }
-                let _ = Node(inner).refresh().await;
+                let node = Node(inner);
+                let _ = node.refresh().await;
+                let _ = node.prune_playback_cache(now());
             }
         });
         Ok((node, hello))
@@ -258,6 +256,7 @@ impl Node {
             items.insert(
                 local.media.id.clone(),
                 LibraryItem {
+                    automatic_download: self.is_playback_copy(&local),
                     media: local.media,
                     sources: vec![source],
                     progress: None,
@@ -297,6 +296,7 @@ impl Node {
                             }
                         })
                         .or_insert_with(|| LibraryItem {
+                            automatic_download: false,
                             media,
                             sources: vec![],
                             progress: None,
@@ -374,8 +374,13 @@ impl Node {
         duration: Option<f64>,
         completed: bool,
     ) -> Result<Progress> {
-        self.0
-            .store
-            .progress(id, &self.0.device.id, position, duration, completed)
+        let progress =
+            self.0
+                .store
+                .progress(id, &self.0.device.id, position, duration, completed)?;
+        if completed {
+            self.prune_playback_copy(id, now())?;
+        }
+        Ok(progress)
     }
 }

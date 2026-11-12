@@ -111,7 +111,7 @@ struct MediaDetailView: View {
                 HStack(spacing: 18) { MediaArt(item: item, size: 90); VStack(alignment: .leading, spacing: 8) { Text(item.title).font(.headline); Text(item.subtitle).font(.caption).foregroundColor(HopperTheme.muted) } }
                 HStack { Button("Play") { Task { await player.play(item) } }.buttonStyle(.borderedProminent); Button("Queue") { player.enqueue(item) }.buttonStyle(.bordered) }
                 Section("Available from") { ForEach(item.sources, id: \.deviceId) { source in Label(source.name + (source.online ? "" : " · offline"), systemImage: source.local ? "iphone" : "desktopcomputer") } }
-                if !item.isLocal { Button("Keep on this device") { Task { await client.keep(item) } }.disabled(client.working) }
+                if item.canKeep { Button("Keep on this device") { Task { await client.keep(item) } }.disabled(client.working) }
                 if !item.chapters.isEmpty {
                     Section("Chapters") { ForEach(item.chapters.filter { $0.hidden != true }) { chapter in Button { Task { if player.currentId != item.id { await player.play(item) }; player.seek(chapter.start) } } label: { HStack { Text(chapter.title); Spacer(); Text(mediaTime(chapter.start)).foregroundColor(HopperTheme.muted) } } } }
                 }

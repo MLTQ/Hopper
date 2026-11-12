@@ -56,6 +56,8 @@ pub(crate) async fn serve(node: Node) -> Result<u16> {
         .route("/progress", post(progress))
         .route("/queue", post(queue))
         .route("/play/:id", post(play))
+        .route("/native-play/:id", post(native_play))
+        .route("/playback-download/:id", post(playback_download))
         .route("/keep/:id", post(keep))
         .route("/podcasts/command", post(podcast_command))
         .route("/home", post(set_home))
@@ -473,6 +475,22 @@ async fn play(State(node): State<Node>, Path(id): Path<String>) -> Api<Value> {
     let grant = node.playback_grant(&id)?;
     Ok(Json(json!({"path":format!("media/{id}?grant={grant}")})))
 }
+async fn native_play(State(node): State<Node>, Path(id): Path<String>) -> Api<Value> {
+    if !valid_id(&id) {
+        return Err(anyhow::anyhow!("Invalid media ID").into());
+    }
+    node.prune_playback_copy(&id, now())?;
+    if let Some(file) = node.local_file(&id)? {
+        return Ok(Json(json!({"local_path":file.path})));
+    }
+    play(State(node), Path(id)).await
+}
+
+async fn playback_download(State(node): State<Node>, Path(id): Path<String>) -> Api<Value> {
+    let path = node.download_for_playback(&id).await?;
+    Ok(Json(json!({"local_path":path})))
+}
+
 async fn keep(State(node): State<Node>, Path(id): Path<String>) -> Api<Value> {
     node.keep_local(&id).await?;
     Ok(Json(json!({"ok":true})))

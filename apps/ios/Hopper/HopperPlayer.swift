@@ -24,6 +24,10 @@ final class HopperPlayer: ObservableObject {
     var artworkTask: Task<Void, Never>?
     var chapterTask: Task<Void, Never>?
 
+    @Published var downloadStatus: String?
+    var downloadTasks: [String: Task<URL, Error>] = [:]
+    var recovering: AVPlayerItem?
+    var wantsPlayback = false
     private let journal: PlaybackJournal
     private var observation: NSKeyValueObservation?
     private var statusObservation: NSKeyValueObservation?
@@ -81,6 +85,10 @@ final class HopperPlayer: ObservableObject {
         observers.append(NotificationCenter.default.addObserver(forName: AVAudioSession.routeChangeNotification, object: nil, queue: .main) { [weak self] note in
             if note.userInfo?[AVAudioSessionRouteChangeReasonKey] as? UInt == AVAudioSession.RouteChangeReason.oldDeviceUnavailable.rawValue { Task { @MainActor in self?.pause() } }
         })
+        observers.append(NotificationCenter.default.addObserver(forName: .AVPlayerItemFailedToPlayToEndTime, object: nil, queue: .main) { [weak self] note in
+            guard let entry = note.object as? AVPlayerItem else { return }
+            Task { @MainActor in self?.handleFailure(entry) }
+        })
         configureCommands()
     }
 
@@ -93,7 +101,7 @@ final class HopperPlayer: ObservableObject {
         if let current { updateArtwork(for: current) }
     }
     func play(_ item: MediaItem) async {
-        checkpoint(); engine.pause()
+        checkpoint(); engine.pause(); wantsPlayback = true; downloadStatus = nil; recovering = nil
         generation = UUID(); let token = generation
         engine.removeAllItems(); mediaIds.removeAll(); currentId = item.id; loading = true
         if !queue.contains(item.id) { queue.append(item.id) }
@@ -112,17 +120,17 @@ final class HopperPlayer: ObservableObject {
             position = pending.map { $0.completed ? 0 : $0.position } ?? (progress?.completed == false ? progress?.position ?? 0 : 0)
             if position > 0 { await engine.seek(to: CMTime(seconds: position, preferredTimescale: 600)) }
             guard generation == token else { return }
-            engine.playImmediately(atRate: rate)
+            if wantsPlayback { engine.playImmediately(atRate: rate) }
             await fillQueue()
-        } catch { loading = false; client.error = error.localizedDescription }
+        } catch { if generation == token { loading = false; client.error = error.localizedDescription } }
     }
     func toggle() {
         if playing { pause() }
-        else if engine.currentItem == nil { if let item = current ?? queuedItems.first { Task { await play(item) } } }
+        else if engine.currentItem == nil || engine.currentItem?.status == .failed { if let item = current ?? queuedItems.first { Task { await play(item) } } }
         else { resume() }
     }
-    func pause() { checkpoint(); engine.pause(); playing = false; try? AVAudioSession.sharedInstance().setActive(false, options: .notifyOthersOnDeactivation); nowPlaying() }
-    func resume() { do { try activateAudio(); engine.playImmediately(atRate: rate) } catch { client.error = error.localizedDescription } }
+    func pause() { wantsPlayback = false; checkpoint(); engine.pause(); playing = false; try? AVAudioSession.sharedInstance().setActive(false, options: .notifyOthersOnDeactivation); nowPlaying() }
+    func resume() { wantsPlayback = true; do { try activateAudio(); engine.playImmediately(atRate: rate) } catch { client.error = error.localizedDescription } }
     func seek(_ seconds: Double) {
         let target = max(0, min(seconds, duration > 0 ? duration : seconds))
         engine.seek(to: CMTime(seconds: target, preferredTimescale: 600)) { [weak self] finished in
@@ -158,12 +166,33 @@ final class HopperPlayer: ObservableObject {
     }
     private func currentChanged() {
         guard let item = engine.currentItem, let id = mediaIds[ObjectIdentifier(item)] else { playing = false; nowPlaying(); return }
+        if currentId != id { downloadStatus = nil; recovering = nil }
         currentId = id; position = 0; duration = current?.duration ?? 0; persistQueue(); nowPlaying()
+        if let url = (item.asset as? AVURLAsset)?.url, !url.isFileURL {
+            _ = playbackDownload(id)
+        }
         Task { await fillQueue() }
-        itemStatus = item.observe(\.status, options: [.new]) { [weak self] entry, _ in
-            if entry.status == .failed { let message = entry.error?.localizedDescription ?? "This media could not play."; Task { @MainActor in self?.client.error = message; self?.loading = false } }
+        itemStatus = item.observe(\.status, options: [.initial, .new]) { [weak self] entry, _ in
+            if entry.status == .failed { Task { @MainActor in self?.handleFailure(entry) } }
         }
     }
+    func replaceFailedEntry(_ failed: AVPlayerItem, with url: URL, id: String) async {
+        guard engine.currentItem === failed, recovering === failed else { return }
+        let resumeAt = max(position, failed.currentTime().seconds.isFinite ? failed.currentTime().seconds : 0)
+        generation = UUID()
+        let token = generation
+        engine.removeAllItems()
+        mediaIds.removeAll()
+        let entry = AVPlayerItem(url: url)
+        mediaIds[ObjectIdentifier(entry)] = id
+        engine.insert(entry, after: nil)
+        if resumeAt > 0 { await engine.seek(to: CMTime(seconds: resumeAt, preferredTimescale: 600)) }
+        guard token == generation else { return }
+        recovering = nil
+        if wantsPlayback { engine.playImmediately(atRate: rate) }
+        await fillQueue()
+    }
+
     private func fillQueue() async {
         needsFill = true
         guard !filling else { return }; filling = true

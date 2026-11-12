@@ -13,3 +13,5 @@ or radius. Queue/full-player backgrounds use hopperScene. Primary transport keep
 accent fill. Playback, scrubbing and queue contracts are unchanged.
 
 The full and mini player show current chapter artwork. Silent image cues stay out of the chapter menu.
+
+The player shows when an episode is downloading or temporarily saved, and distinguishes permanent local files.

@@ -16,3 +16,5 @@ Native AVQueuePlayer session, remote commands, background queue advancement and 
   local progress before seeking, preserving immediate rewind/replay intent.
 
 Folder playback replaces the queue with the selected subtree and can start at a particular episode. Artwork follows playback, seeks and item changes through PlaybackArtwork.
+
+Only a current remote item triggers a full download. Upcoming items prepare lightweight URLs. A failed stream can resume from its verified copy while preserving pause intent and queue order.

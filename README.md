@@ -104,7 +104,7 @@ cellular transitions, long pauses, and extended locked playback.
 2. Open **Pair a device → Create pairing QR code**. Keep the code on screen.
 3. On iPhone, open **Hopper → Devices → Scan pairing QR code**, allow the camera, and scan the desktop. You can also paste the invitation in Devices.
 4. In the iPhone **Library**, open the archive, then its plotline or season. **Play folder** starts that branch. Tapping an episode starts there and continues within the branch. On desktop, open **Folders** for the same hierarchy.
-5. Repeat the QR scan for each additional desktop. All paired libraries appear together. Use **Keep on this device** on an episode for offline listening.
+5. Repeat the QR scan for each additional desktop. All paired libraries appear together. Playing an episode on iPhone starts saving it for offline listening. A saved episode stays until you finish it or 30 days pass from download. Choose **Keep on this device** to keep it beyond those limits.
 
 Original-owning desktops must stay online for streaming. Downloaded copies work offline and are
 also available from that paired device while it is serving. Closing a desktop app stops its node.

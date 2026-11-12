@@ -34,3 +34,5 @@ Desktop shells derive their default device label from the machine name. Device i
 Folder import and removal operations serialize local publication and Home enqueue so a removal cannot strand an addition partway through.
 
 When duplicate media arrives from another source, a known logical folder can fill a previously empty folder field.
+
+Startup recovers temporary playback downloads. Periodic maintenance applies synced completion and age limits. Local completion also releases the automatic copy immediately.

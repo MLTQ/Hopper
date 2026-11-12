@@ -11,3 +11,5 @@ Podcast commands operate on the authenticated owner's subscriptions/jobs, never 
 configuration or filesystem paths. Responses return show/media/job IDs; snapshots carry status.
 
 Deliver/Delivered carry typed podcast links or published media IDs and idempotent receipts, never arbitrary paths. A paired sender may add its own Hopper media to a receiving desktop library.
+
+Snapshot requests and responses may include the sender’s current endpoint address. Older peers omit or ignore the optional field.

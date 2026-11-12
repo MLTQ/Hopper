@@ -121,7 +121,10 @@ impl Node {
             None => {
                 let c = tokio::time::timeout(
                     Duration::from_secs(8),
-                    self.0.endpoint.connect(address.clone(), wire::ALPN),
+                    self.0.endpoint.connect(
+                        crate::peer_address::dial_address(address.clone()),
+                        wire::ALPN,
+                    ),
                 )
                 .await
                 .context("device connection timed out")??;
@@ -142,6 +145,23 @@ impl Node {
         Ok((send, recv))
     }
 
+    fn remember_address(&self, id: &str, address: Option<EndpointAddr>) -> Result<()> {
+        if let Some(address) = address
+            && address.id.to_string() == id
+            && !address.addrs.is_empty()
+            && address.addrs.len() <= 64
+            && let Some(peer) = self.0.store.get::<Peer>("peer", id)?
+            && peer.address != address
+        {
+            self.0.store.update("peer", id, |existing: Option<Peer>| {
+                let mut peer = existing.context("device removed")?;
+                peer.address = address;
+                Ok(peer)
+            })?;
+        }
+        Ok(())
+    }
+
     pub async fn refresh(&self) -> Result<()> {
         let _guard = self.0.refreshing.lock().await;
         let peers = self.0.store.all::<Peer>("peer")?;
@@ -154,11 +174,14 @@ impl Node {
                     let (_, mut recv) = node
                         .request(
                             peer.address.clone(),
-                            Request::Snapshot { progress: updates },
+                            Request::Snapshot {
+                                progress: updates,
+                                address: Some(node.0.endpoint.addr()),
+                            },
                         )
                         .await?;
                     match wire::read_json(&mut recv).await? {
-                        Response::Snapshot { snapshot } => {
+                        Response::Snapshot { snapshot, address } => {
                             ensure!(
                                 snapshot.device.id == peer.device.id,
                                 "catalogue identity mismatch"
@@ -175,6 +198,7 @@ impl Node {
                                 node.0.store.get::<Peer>("peer", &peer.device.id)?.is_some(),
                                 "device removed"
                             );
+                            node.remember_address(&peer.device.id, address)?;
                             node.0.store.merge_progress(&snapshot.progress)?;
                             node.0.store.put("snapshot", &peer.device.id, &snapshot)?;
                             Ok(())
@@ -317,12 +341,14 @@ impl Node {
                 let result = self.apply_podcast_command(command).await?;
                 wire::write_json(send, &Response::Podcast { result }).await?;
             }
-            Request::Snapshot { progress } => {
+            Request::Snapshot { progress, address } => {
+                self.remember_address(&remote, address)?;
                 self.0.store.merge_progress(&progress)?;
                 wire::write_json(
                     send,
                     &Response::Snapshot {
                         snapshot: self.snapshot()?,
+                        address: Some(self.0.endpoint.addr()),
                     },
                 )
                 .await?;

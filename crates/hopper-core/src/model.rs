@@ -98,6 +98,7 @@ pub struct Source {
 
 #[derive(Clone, Debug, Serialize)]
 pub struct LibraryItem {
+    pub automatic_download: bool,
     #[serde(flatten)]
     pub media: Media,
     pub sources: Vec<Source>,

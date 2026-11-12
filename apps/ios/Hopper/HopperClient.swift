@@ -64,7 +64,7 @@ final class HopperClient: ObservableObject {
     func request<T: Decodable>(_ path: String, method: String = "GET", body: Data? = nil) async throws -> T {
         guard let hello, let url = URL(string: "http://127.0.0.1:\(hello.port)/api/\(path)") else { throw failureError("The library is still starting.") }
         var request = URLRequest(url: url); request.httpMethod = method; request.httpBody = body
-        request.timeoutInterval = path.hasPrefix("keep/") || path == "podcasts/command" ? 3700 : 90
+        request.timeoutInterval = path.hasPrefix("playback-download/") || path.hasPrefix("keep/") || path == "podcasts/command" ? 3700 : 90
         request.setValue("Bearer \(hello.token)", forHTTPHeaderField: "Authorization")
         if body != nil { request.setValue("application/json", forHTTPHeaderField: "Content-Type") }
         let (data, response) = try await URLSession.shared.data(for: request)
@@ -82,10 +82,21 @@ final class HopperClient: ObservableObject {
         catch { self.error = error.localizedDescription }
     }
     func mediaURL(_ id: String) async throws -> URL {
-        let grant: MediaGrant = try await post("play/\(id)", EmptyBody())
-        guard let hello, let url = URL(string: "http://127.0.0.1:\(hello.port)/\(grant.path)") else { throw failureError("Invalid playback location") }
+        let location: PlaybackLocation = try await post("native-play/\(id)", EmptyBody())
+        if let path = location.localPath { return URL(fileURLWithPath: path) }
+        guard let path = location.path, let hello,
+              let url = URL(string: "http://127.0.0.1:\(hello.port)/\(path)") else {
+            throw failureError("Invalid playback location")
+        }
         return url
     }
+
+    func downloadForPlayback(_ id: String) async throws -> URL {
+        let location: PlaybackLocation = try await post("playback-download/\(id)", EmptyBody())
+        guard let path = location.localPath else { throw failureError("The download could not be saved.") }
+        return URL(fileURLWithPath: path)
+    }
+
     func pair(_ code: String) async {
         working = true; defer { working = false }
         do { library = try await post("pair", PairBody(code: code)) } catch { self.error = error.localizedDescription }

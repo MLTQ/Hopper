@@ -27,3 +27,5 @@ The authenticated folder routes manage local registrations and invoke a picker s
 GET /api/folders includes imported roots. DELETE /api/imported-folders/:id removes one local import group. Multipart folder names come from the browser’s relative filename.
 
 The native folder-copy endpoint invokes the shell picker. Original chapter lookup is restricted to catalogued episode IDs. A bearer-protected binary endpoint fetches bounded artwork without forwarding credentials.
+
+The authenticated native-play route resolves a media ID to an available local file or scoped stream. Playback-download returns the verified local path.

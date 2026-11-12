@@ -5,6 +5,7 @@ use crate::{
     wire::{self, Request, Response},
 };
 use anyhow::{Context, Result, bail, ensure};
+use std::path::Path;
 use std::{
     pin::Pin,
     time::{Duration, Instant},
@@ -144,8 +145,20 @@ impl Node {
             .find(|i| i.media.id == id)
             .context("unknown media")?
             .media;
+        let local = self
+            .download_verified(&media, &self.0.dir.join("media"))
+            .await?;
+        self.0.store.put("local", id, &local)
+    }
+
+    pub(crate) async fn download_verified(
+        &self,
+        media: &Media,
+        directory: &Path,
+    ) -> Result<LocalMedia> {
+        let id = &media.id;
         let mut reader = self.read_media(id, 0, media.bytes).await?;
-        let temp = tempfile::NamedTempFile::new_in(self.0.dir.join("media"))?;
+        let temp = tempfile::NamedTempFile::new_in(directory)?;
         let mut dest = tokio::fs::File::from_std(temp.reopen()?);
         let mut hasher = blake3::Hasher::new();
         let mut buffer = vec![0u8; 256 * 1024];
@@ -176,20 +189,15 @@ impl Node {
             ext.len() <= 12 && ext.bytes().all(|b| b.is_ascii_alphanumeric()),
             "invalid media extension"
         );
-        let path = self.0.dir.join("media").join(format!("{id}.{ext}"));
+        let path = directory.join(format!("{id}.{ext}"));
         import::persist_managed(temp, &path, id).await?;
         let modified = import::modified(&std::fs::metadata(&path)?);
-        self.0.store.put(
-            "local",
-            id,
-            &LocalMedia {
-                media,
-                path,
-                modified,
-                managed: true,
-            },
-        )?;
-        Ok(())
+        Ok(LocalMedia {
+            media: media.clone(),
+            path,
+            modified,
+            managed: true,
+        })
     }
 }
 

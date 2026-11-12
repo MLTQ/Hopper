@@ -14,3 +14,5 @@ does not depend on this client's polling loop. Refresh failures are visible, nev
 Starts share-inbox draining after core startup; serialized drain state prevents duplicate concurrent intake.
 
 Index media, shows and media-to-episode associations when a catalogue arrives. The player uses these indexes for repeated queue and artwork lookups.
+
+Resolve native playback to a file URL when available and request a verified automatic copy for remote playback. Media transfers use the long download timeout.

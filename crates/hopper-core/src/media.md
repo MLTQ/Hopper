@@ -14,3 +14,5 @@ Range-aware readers, scoped playback grants, and content-verified offline copies
 Desktop playback and peer reads resolve registered folder sources by the same content ID used by managed copies.
 
 A verified offline copy reuses identical managed bytes already kept by a folder import. Publishing the independent copy preserves the other source’s modification stamp.
+
+Explicit keeps and automatic downloads use the same verified transfer with separate destination directories.

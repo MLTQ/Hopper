@@ -10,3 +10,5 @@ the selected registration; independent copies and other shared roots remain avai
 Source lookup includes one-time imported folders. Identical content remains playable from an available independent file, another import or a registered share.
 
 A known shared-folder path can restore the folder label of an existing loose import with identical bytes.
+
+Automatic playback copies supply local items when no permanent source is available.
