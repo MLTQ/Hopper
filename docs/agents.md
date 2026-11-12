@@ -29,8 +29,7 @@ checkbox clears the saved value (an environment fallback still applies).
 ## Hermes or a custom executable
 
 Hermes mode accepts an executable/argv JSON array, for example `["/absolute/path/to/hermes"]`.
-Hopper invokes `hermes chat --quiet -q <job instruction>`. Hermes must already have model credentials
-and tools that can actually listen to the audio. This adapter does not install Hermes or give a
+Hopper invokes `hermes chat --quiet -q <job instruction>` and includes the bundled hopper-cut-ads skill. Hermes needs configured model access and tools for audio listening or local timed transcription of the exact episode. A timed transcript can establish spoken sponsorships. Preserve ambiguous dialogue or music. This adapter does not install Hermes or give a
 text-only model audio capabilities. The CLI contract was checked against local Hermes source;
 live audio processing with Hermes has not yet been validated.
 
@@ -74,12 +73,12 @@ desktop. The Audio agent dialog shows the jobs directory; its parent is the libr
 }
 ```
 
-The bridge provides `hopper_pending_jobs`, `hopper_get_job`, `hopper_submit_analysis` and
+The bridge provides `hopper_pending_jobs`, `hopper_get_job`, `hopper_listen_clip`, `hopper_submit_analysis` and
 `hopper_fail_job`. It exposes only active inbox jobs, validates source identity and ranges, and
 publishes results atomically. The worker validates again before rendering. Only one configured
 agent should process the inbox; there is no distributed claim/lease scheduler yet.
 
-Ask the agent to check pending jobs, listen to each job's audio, and submit its analysis. To work
+Point an inbox agent at `skills/hopper-cut-ads/SKILL.md`. An audio-capable client can request up to 60 seconds of actual WAV audio per call, including when the bridge runs on the owner over SSH. Ask the agent to process the chosen episode and submit its analysis. To work
 unattended, configure a polling/watch task in that agent app. **MCP provides the tools, not an
 automatic wakeup.** Dot and Muse have no verified app-specific launcher in this implementation;
 compatibility depends on their actual MCP and audio-tool support. No settings in those apps are

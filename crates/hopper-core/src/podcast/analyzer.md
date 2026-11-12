@@ -7,3 +7,5 @@ drops HTTP work and kills a child process. Inbox mode waits for an atomic analys
 Only trusted local configuration can launch commands; no shell evaluation. Hermes receives a
 single `chat --quiet -q` request and must have its own actual audio-understanding tools configured.
 No undocumented Dot/Muse command is assumed: those clients can use the shared MCP inbox if supported.
+
+The Hermes launcher includes the repository’s hopper-cut-ads skill in the job prompt, so it uses the current source-time and atomic-output contract without a separate skill installation. Hermes may use local timed transcription generated from the immutable job input for spoken ads. Other modes retain their existing evidence contract.

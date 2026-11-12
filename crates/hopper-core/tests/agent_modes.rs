@@ -184,6 +184,8 @@ async fn builtin_audio_and_external_inbox_preserve_failures_and_credentials() {
         json!({"jsonrpc":"2.0","id":2,"method":"tools/call","params":{"name":"hopper_pending_jobs","arguments":{}}}),
         json!({"jsonrpc":"2.0","id":3,"method":"tools/call","params":{"name":"hopper_get_job","arguments":{"job_id":"../outside"}}}),
         json!({"jsonrpc":"2.0","id":4,"method":"tools/call","params":{"name":"hopper_submit_analysis","arguments":{"job_id":inbox,"analysis":{"source_hash":"wrong","duration":12,"segments":[]}}}}),
+        json!({"jsonrpc":"2.0","id":6,"method":"tools/call","params":{"name":"hopper_listen_clip","arguments":{"job_id":inbox,"start":11.5,"seconds":2}}}),
+        json!({"jsonrpc":"2.0","id":7,"method":"tools/call","params":{"name":"hopper_listen_clip","arguments":{"job_id":inbox,"start":0,"seconds":600}}}),
         json!({"jsonrpc":"2.0","id":5,"method":"tools/call","params":{"name":"hopper_submit_analysis","arguments":{"job_id":inbox,"analysis":analysis}}}),
     ];
     let script =
@@ -220,7 +222,20 @@ async fn builtin_audio_and_external_inbox_preserve_failures_and_credentials() {
     );
     assert_eq!(replies[2]["result"]["isError"], true);
     assert_eq!(replies[3]["result"]["isError"], true);
-    assert!(replies[4]["result"]["isError"].is_null(), "{}", replies[4]);
+    let clip = &replies[4]["result"]["content"][1];
+    assert_eq!(clip["type"], "audio");
+    assert_eq!(clip["mimeType"], "audio/wav");
+    let wave = base64::engine::general_purpose::STANDARD
+        .decode(clip["data"].as_str().unwrap())
+        .unwrap();
+    assert_eq!(&wave[0..4], b"RIFF");
+    assert_eq!(
+        wave.len(),
+        44 + 16000,
+        "the final excerpt ends at the source boundary"
+    );
+    assert_eq!(replies[5]["result"]["isError"], true);
+    assert!(replies[6]["result"]["isError"].is_null(), "{}", replies[6]);
     let no_cuts = state(&node, &inbox, "ready").await;
     assert_eq!(no_cuts.removed_seconds, 0.0);
     let cancelled = cut(&node, &owner, &show, &episode).await;
