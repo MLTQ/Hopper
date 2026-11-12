@@ -11,7 +11,8 @@ for the checks actually performed and remaining device tests.
 
 The local macOS development bundle is `target/debug/bundle/macos/Hopper.app`. The generated iOS
 project is `apps/ios/Hopper.xcodeproj`. The macOS bundle and a physical iPhone have paired by QR and streamed a shared
-episode end to end. Linux/Windows runtime verification remains outstanding.
+episode end to end. On Omarchy Linux, the installed desktop app opened its library UI and displayed
+a pairing QR code. Linux media playback and Windows runtime checks remain open.
 
 ## Working vertical slice
 
@@ -57,6 +58,12 @@ then run `cargo tauri build` inside `apps/desktop`. macOS debug development buil
 On Ubuntu/Debian, install Tauri's GTK/WebKit dependencies (including `libwebkit2gtk-4.1-dev`,
 `build-essential`, `libayatana-appindicator3-dev`, `librsvg2-dev`, `patchelf`) before building.
 Windows needs the MSVC C++ build tools and WebView2. macOS needs Xcode command-line tools.
+
+On Arch-based Linux with GTK 3 and WebKitGTK 4.1 installed, build the desktop executable with
+`cargo build --release --locked -p hopper-desktop`. If Hopper exits at startup with
+`Error 71 (Protocol error) dispatching to Wayland display`, try
+`WEBKIT_DISABLE_DMABUF_RENDERER=1 ./target/release/hopper-desktop`. This worked on Omarchy 4.5
+with WebKitGTK 2.54.1. The setting can be applied in Hopper's launcher.
 
 ## Run a headless desktop/node
 

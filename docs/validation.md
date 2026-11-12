@@ -28,7 +28,7 @@ Tests use generated audio in an isolated preview library; no personal media was 
 The checked-in build workflow has not been run on a remote CI service.
 
 ## Required before a dependable release
-- Actual Windows and Linux runtime behavior and codec coverage.
+- Windows runtime checks and Linux import, playback, codec and cross-device pairing checks.
 - Physical iPhone: at least 30 minutes locked with three queue transitions; lock-screen/headset
   controls; long M4B seeks; calls/Siri; Bluetooth disconnection; Wi-Fi/cellular handoff; host sleep;
   offline playback; paused-app resumption; relaunch restoring a saved position.
@@ -124,3 +124,15 @@ accessibility walkthroughs are tracked in hopper-tqd; existing platform/device r
 - This was a foreground listening check on one physical Mac and iPhone. Multiple physical
   desktops, Linux and Windows runtime behavior, long background playback, and network handoff
   still need device checks.
+
+## Omarchy Linux desktop installation — November 12, 2026
+
+- Built the x86-64 desktop release on Omarchy 4.5 with Rust 1.99.1, GTK 3.24.52 and
+  WebKitGTK 2.54.1 using `cargo build --release --locked -p hopper-desktop`. All shared
+  libraries resolved. Installed the executable, desktop entry and icon for the current user.
+- The first launcher test exited with Wayland protocol error 71. With
+  `WEBKIT_DISABLE_DMABUF_RENDERER=1` scoped to Hopper, the compositor mapped the native
+  window and its WebKit accessibility tree showed the one-use QR image in the pairing dialog.
+  The installed launcher applies this setting on this machine.
+- Pair redemption, imports, media playback and codec coverage on Linux remain open in
+  `hopper-lky.6`, along with Windows validation and distributable installers.
