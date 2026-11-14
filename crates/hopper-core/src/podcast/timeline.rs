@@ -50,16 +50,14 @@ pub fn plan(
             "invalid agent classification"
         );
         if s.confidence >= options.minimum_confidence
-            && (s.kind == "ad"
-                || s.kind == "banter" && !options.keep_banter
-                || s.kind == "promo" && !options.keep_promos)
+            && (s.kind == "ad" || s.kind == "promo" && !options.keep_promos)
         {
             cuts.push((s.start, s.end.min(duration)));
         } else {
             protected.push((s.start, s.end.min(duration)));
         }
     }
-    // Conflicting classifications resolve toward preservation, including kept banter/promos.
+    // Conflicting classifications resolve toward preservation, including legacy conversation labels and retained promos.
     for (start, end) in protected {
         cuts = cuts
             .into_iter()
@@ -297,6 +295,17 @@ mod tests {
             keep_banter: false,
             ..Default::default()
         };
-        assert_eq!(duration(&plan(&a, &options, "x", 100.0).unwrap()), 70.0);
+        assert_eq!(duration(&plan(&a, &options, "x", 100.0).unwrap()), 80.0);
+        let saved: CutOptions = serde_json::from_value(serde_json::json!({
+            "keep_banter": false, "keep_promos": false, "fade_ms": 100
+        }))
+        .unwrap();
+        assert!(saved.keep_banter);
+        assert!(!saved.keep_promos);
+        assert_eq!(saved.fade_ms, 100);
+        assert_eq!(duration(&plan(&a, &saved, "x", 100.0).unwrap()), 80.0);
+        let fresh: CutOptions = serde_json::from_value(serde_json::json!({})).unwrap();
+        assert!(fresh.keep_banter);
+        assert_eq!(serde_json::to_value(saved).unwrap()["keep_banter"], true);
     }
 }

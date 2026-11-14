@@ -7,3 +7,5 @@ the real Python MCP bridge over stdio, rejecting traversal and mismatched hashes
 an empty analysis. Requires FFmpeg and Python 3. These are contract tests, not ad-detection evals.
 
 The bridge test requests a clip past the final boundary, decodes its WAV and checks its exact length. It also rejects an oversized request.
+
+The inbox round trip also submits a legacy banter segment and verifies a successful output with no removed audio.

@@ -10,3 +10,5 @@ The catalogue decodes optional show and episode cover URLs and original chapter 
 The optional feed URL lets discovery recognize shows already followed on the selected desktop.
 
 Downloads decode as an optional catalogue list for compatibility with older desktops. Each record gives episode ID, owner-scoped show ID, state and user-facing message.
+
+Current cut options omit the retired keepBanter control. Unknown legacy fields are ignored on decoding.

@@ -9,3 +9,5 @@ single `chat --quiet -q` request and uses its configured listening or source-tim
 No undocumented Dot/Muse command is assumed: those clients can use the shared MCP inbox if supported.
 
 The Hermes launcher includes the repository’s hopper-cut-ads skill in the job prompt, so it uses the current source-time and atomic-output contract without a separate skill installation. Hermes may use local timed transcription generated from the immutable job input for spoken ads. Other modes retain their existing evidence contract.
+
+New manifests request ad, promo, content and uncertain classifications. The renderer also accepts older conversation labels and protects them.

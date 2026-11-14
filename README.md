@@ -28,7 +28,7 @@ a pairing QR code. Linux media playback and Windows runtime checks remain open.
 - Subscribing downloads the latest episode on its owner. Use each episode’s Download button to prepare more, and follow ad edits in the Cutting room.
 - Choose a Home desktop; laptop/phone additions wait for delivery there, with visible receipts.
 - Browse/control desktop-owned podcasts from paired desktop/iOS apps.
-- Try **Cut ads** on a specific episode, or set per-show ad cuts, banter/promos, fades, confidence and automatic preparation of future episodes.
+- Try **Cut ads** on a specific episode, or set per-show ad cuts, show promos, fades, confidence and automatic preparation of future episodes.
 - Process through a built-in audio LLM connection, Hermes/custom command, or external MCP inbox.
 - Preserve originals and remap chapters, supported transcripts, soundbites and listening position.
 

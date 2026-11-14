@@ -56,7 +56,7 @@ Commands: subscribe(url), refresh(show_id), settings(show_id,newest_first,cut_op
 unsubscribe(show_id), download(episode_id), cut(show_id,episode_ids,options), retry(job_id), cancel(job_id).
 Results include optional show_id/media_id and job_ids. A Cut request enqueues durable work and returns;
 its statuses progress through waiting_for_agent/queued/downloading/analysing/rendering/ready, or
-failed/cancelled. Options: keep_banter, keep_promos, fade_ms, minimum_confidence, auto_process.
+failed/cancelled. Options: keep_promos, fade_ms, minimum_confidence, auto_process. The legacy keep_banter field is returned as true for older clients and incoming values are ignored.
 
 Agent modes are builtin, hermes, command, inbox. Configuration requires the local control token;
 paired clients cannot change executables or credentials. The source-bound Analysis and MCP bridge

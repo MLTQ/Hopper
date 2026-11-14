@@ -16,3 +16,5 @@ Protocol reference: https://developers.openai.com/api/docs/guides/audio-chat-com
 Checkpoint fingerprints include cut preferences; only validated chunk decisions are cached.
 
 Desktop FFmpeg tools resolve through media_tools, including standard macOS Homebrew locations.
+
+The prompt focuses on promotional intent and evidence in ad breaks and sponsor reads across podcast genres. Normal conversation is content.

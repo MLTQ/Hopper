@@ -177,8 +177,7 @@ async fn builtin_audio_and_external_inbox_preserve_failures_and_credentials() {
     state(&node, &inbox, "analysing").await;
     let request_path = data.join("jobs").join(&inbox).join("request.json");
     let request: Value = serde_json::from_slice(&std::fs::read(request_path).unwrap()).unwrap();
-    let analysis =
-        json!({"source_hash":request["source_hash"],"duration":request["duration"],"segments":[]});
+    let analysis = json!({"source_hash":request["source_hash"],"duration":request["duration"],"segments":[{"start":1,"end":3,"kind":"banter","confidence":0.99,"reason":"Legacy conversation classification"}]});
     let messages = [
         json!({"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2025-11-25"}}),
         json!({"jsonrpc":"2.0","id":2,"method":"tools/call","params":{"name":"hopper_pending_jobs","arguments":{}}}),

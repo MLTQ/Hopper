@@ -10,7 +10,8 @@ unknown fields. Transcript cues crossing cuts split into retained intervals. Sou
 and saved playback positions use the same mapping. Tests cover overlap, banter, uncertainty,
 chapter images, transcript splits and wrong-source rejection.
 
-Conflicting overlapping classifications preserve protected content, uncertain ranges and kept banter/
-promos. Chapter JSON entries are sorted/validated before inferred ends are mapped.
+Conflicting overlapping classifications preserve protected content, uncertain ranges legacy conversation labels and retained promos. Chapter JSON entries are sorted/validated before inferred ends are mapped.
 
 Remapped playable chapter entries carry the image URL and table-of-contents visibility from the source.
+
+Conversation classified as legacy banter is always protected, even for older options with keep_banter set to false. Tests cover loading and serializing those preferences.

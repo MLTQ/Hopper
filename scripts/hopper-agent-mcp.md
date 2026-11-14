@@ -12,3 +12,5 @@ The external client needs actual audio tools and an active turn/watch to poll pe
 No third-party app configuration is changed automatically. See docs/agents.md for setup.
 
 hopper_listen_clip returns native MCP audio content plus its source offset for up to 60 seconds of the active managed episode. FFmpeg decodes a bounded mono PCM excerpt locally. The bridge checks the active job again before returning audio. An audio-capable client on another machine can use an SSH stdio transport and hear clips without a shared filesystem.
+
+The advertised classification schema focuses on ads, promos, content and uncertainty. The validator continues to accept legacy banter classifications, which Hopper always retains.

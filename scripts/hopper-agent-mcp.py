@@ -17,7 +17,7 @@ import wave
 
 SEGMENT = {"type": "object", "required": ["start", "end", "kind", "confidence", "reason"], "properties": {
     "start": {"type": "number", "minimum": 0}, "end": {"type": "number"},
-    "kind": {"enum": ["ad", "banter", "promo", "content", "uncertain"]},
+    "kind": {"enum": ["ad", "promo", "content", "uncertain"]},
     "confidence": {"type": "number", "minimum": 0, "maximum": 1}, "reason": {"type": "string"}}}
 ANALYSIS = {"type": "object", "required": ["source_hash", "duration", "segments"], "properties": {
     "source_hash": {"type": "string"}, "duration": {"type": "number"},
@@ -156,7 +156,8 @@ class Inbox:
             start, end, confidence = (segment.get(k) for k in ("start", "end", "confidence"))
             if not all(number(v) for v in (start, end, confidence)) or not 0 <= start < end <= duration or not 0 <= confidence <= 1:
                 raise ValueError("invalid segment times or confidence")
-            if segment.get("kind") not in SEGMENT["properties"]["kind"]["enum"] or not isinstance(segment.get("reason"), str):
+            valid_kind = segment.get("kind") in SEGMENT["properties"]["kind"]["enum"] or segment.get("kind") == "banter"
+            if not valid_kind or not isinstance(segment.get("reason"), str):
                 raise ValueError("invalid segment classification or evidence")
 
 

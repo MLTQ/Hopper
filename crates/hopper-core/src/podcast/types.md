@@ -4,7 +4,7 @@ Shared show, episode, preferences and durable processing-job contracts. IDs incl
 device/feed and GUID; downloaded variants separately use immutable byte hashes. Feed URLs may
 contain private feed tokens, so they must not be logged or embedded in public error messages.
 
-Cut defaults keep banter/promos and low-confidence segments. A positive fade is a non-overlapping
+Cuts preserve conversation and low-confidence segments. Show promos default to retained. A positive fade is a non-overlapping
 edge fade, not a crossfade. Jobs retain the exact options and source hash used, analysis decisions,
 source-to-output spans, original/edited metadata and errors. Only ready jobs label media cleaned.
 Owner commands are typed and contain no executable commands or filesystem paths.
@@ -17,3 +17,5 @@ Episode artwork is optional. Compact catalogues keep episode covers and chapter 
 The merged show sort uses each show’s maximum positive publication time. Undated shows follow dated shows. Equal dates sort by title and owner-scoped ID. A CutEpisode command carries one episode and per-job options.
 
 The optional downloads catalogue field is backward compatible with saved snapshots. QueueDownload schedules a durable transfer and returns promptly. Existing Download continues to wait for a playable ID.
+
+keep_banter remains in serialized options for older listeners. Its deserializer consumes old boolean values and normalizes them to true. It is excluded from current UI controls.

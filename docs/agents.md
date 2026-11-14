@@ -48,7 +48,7 @@ to the actual audio, then atomically write:
 }
 ```
 
-Times are in **original episode seconds**. Kinds are `ad`, `banter`, `promo`, `content`, `uncertain`.
+Times are in **original episode seconds**. Kinds are `ad`, `promo`, `content`, `uncertain`. Older `banter` results remain accepted and preserve that interval.
 An empty array is a successful analysis with no identified cuts. Failure to listen must fail the
 job, never return an invented empty success. Do not modify input audio. Exit nonzero on failure;
 logs remain in the job directory. Legacy `HOPPER_AD_AGENT` or `agent-command.json` argv configuration

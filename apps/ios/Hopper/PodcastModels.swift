@@ -1,7 +1,6 @@
 import Foundation
 
 struct CutOptions: Codable {
-    var keepBanter = true
     var keepPromos = true
     var fadeMs = 20
     var minimumConfidence = 0.9

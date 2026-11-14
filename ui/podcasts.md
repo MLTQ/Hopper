@@ -3,7 +3,7 @@
 Desktop subscription/show/settings/cut-job surfaces. Uses authenticated owner-directed commands.
 Preserve the player element when switching views. Only ready variants are presented as cleaned.
 Subscriptions delegate to home.js intake and can queue to an offline desktop owner. Show settings include order, refresh, unsubscribe
-and a dedicated cut form: banter/promos, non-overlapping fades, confidence, bounded backlog and
+and a dedicated cut form: show promos, non-overlapping fades, confidence, bounded backlog and
 future-episode processing. Queue/play use the cleaned variant when ready; originals remain playable.
 Job statuses come from the core. Missing agent configuration is explicitly shown as waiting.
 

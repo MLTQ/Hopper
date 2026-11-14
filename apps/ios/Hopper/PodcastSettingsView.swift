@@ -38,9 +38,8 @@ struct CutAdsView: View {
         NavigationStack {
             Form {
                 Section {
-                    Toggle("Keep banter", isOn: $options.keepBanter)
                     Toggle("Keep show promos", isOn: $options.keepPromos)
-                } footer: { Text("Keep the hosts’ conversations and tangents. Show promos include trailers and announcements for other shows.") }
+                } footer: { Text("Show promos include trailers and announcements for other shows.") }
                 Section("Edit style") {
                     Picker("Fade at cuts", selection: $options.fadeMs) { Text("Off — direct stitch").tag(0); Text("Short · 20 ms").tag(20); Text("Soft · 100 ms").tag(100); Text("Long · 250 ms").tag(250) }
                     Picker("When uncertain", selection: $options.minimumConfidence) { Text("Keep it").tag(0.9); Text("Keep more").tag(0.98); Text("Allow more cuts").tag(0.75) }

@@ -4,12 +4,19 @@ use serde::{Deserialize, Serialize};
 #[derive(Clone, Debug, Serialize, Deserialize, PartialEq)]
 #[serde(default)]
 pub struct CutOptions {
+    // Retained in responses for older clients. Saved and incoming false values are ignored.
+    #[serde(deserialize_with = "preserve_conversation")]
     pub keep_banter: bool,
     pub keep_promos: bool,
     pub fade_ms: u32,
     pub minimum_confidence: f64,
     pub auto_process: bool,
 }
+fn preserve_conversation<'de, D: serde::Deserializer<'de>>(input: D) -> Result<bool, D::Error> {
+    bool::deserialize(input)?;
+    Ok(true)
+}
+
 impl Default for CutOptions {
     fn default() -> Self {
         Self {
