@@ -198,3 +198,5 @@ A paired listener subscribed to a feed that listed its older episode first. The 
 The native and desktop interfaces expose owner download actions and a Cutting room containing actual processing status, cancellation and retry. iOS decodes download state optionally to retain compatibility with earlier desktop snapshots.
 
 All 24 core tests, the desktop browser interaction checks, workspace Clippy, both embedded iOS targets and the signed iPhone build passed. The browser check clicked Download, verified its owner-directed queue command, then opened Cutting room and cancelled a waiting fixture job. Windows execution was not checked.
+
+The signed update was installed on Iris, whose saved Home setting is Aine. Aine’s release build was installed and its running Hopper window verified. Native UI automation could not provision its separate test runner because Xcode has no signed-in developer account. The regular app used its existing profile. Physical taps and screen layout remain unverified for this change.
