@@ -205,4 +205,4 @@ The signed update was installed on Iris, whose saved Home setting is Aine. Aineâ
 
 Removed the conversation-retention toggle from iOS and desktop, along with story-oriented agent examples. The editing plan always preserves legacy banter classifications. Persisted false values normalize to true for compatibility with older clients. Existing tests cover deserialization, retention under old preferences, and a legacy inbox analysis passing through rendering without losing conversation.
 
-All 24 core tests and workspace Clippy passed. The updated agent skill passed validation.
+All 24 core tests, workspace Clippy, desktop browser checks, both embedded iOS targets, the signed iPhone build and the macOS bundle build passed. The updated agent skill passed validation. The signed update was installed on Iris. Aine built revision `77668b0` in release mode; its updated executable was installed and verified in the running desktop window. Physical UI interaction and Windows execution were not checked for this change; ad classification was exercised with fixtures, without another live Hermes run.
