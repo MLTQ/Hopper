@@ -12,3 +12,5 @@ Audio agent opens the local setup dialog; a remotely owned show directs setup to
 The show grid loads publisher cover images and leaves delivery receipts in Devices.
 
 Browse opens directory discovery. Each episode has its own cut form. A one-episode cut leaves the show defaults and future-episode policy intact.
+
+Download queues an owner transfer without starting playback. The Cutting room navigation renders merged job state through cutting-room.js. Rows reflect persisted transfer state and make cancellation/retry available.

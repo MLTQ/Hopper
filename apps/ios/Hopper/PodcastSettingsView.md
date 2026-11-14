@@ -7,3 +7,5 @@ visible and queues durable waiting jobs instead of pretending to analyze audio. 
 remain available after unsubscribe. Processing commands target the show's owning desktop.
 
 A sheet opened from an episode sends cut_episode with per-job settings. The show-level form starts with one unplayed episode.
+
+The confirmation button sends the selected episode(s) to the Cutting room.

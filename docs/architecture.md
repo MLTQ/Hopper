@@ -99,6 +99,6 @@ One-time desktop folder imports have separate local source memberships, keyed by
 
 ## Podcast discovery
 
-Both shells use the same directory adapters and durable subscription intake. Apple requests originate on the browsing device. Podcast Index queries travel over the paired connection to the selected desktop, which signs HTTPS requests using private local credentials. Directory browsing is read-only. Subscribing explicitly queues one URL for that desktop.
+Both shells use the same directory adapters and durable subscription intake. Apple requests originate on the browsing device. Podcast Index queries travel over the paired connection to the selected desktop, which signs HTTPS requests using private local credentials. Directory browsing is read-only. Subscribing explicitly queues one URL for that desktop. After the owner imports the feed, it persists a download of the latest published episode. A separate worker completes episode transfers and resumes interruptions independently of agent analysis. Explicit downloads share that queue.
 
 The merged subscription library orders shows by latest episode publication, including cached peer episodes. A single-episode cut takes its own job options and leaves the default policy for future episodes intact.

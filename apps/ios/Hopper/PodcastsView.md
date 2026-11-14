@@ -14,3 +14,5 @@ Semantic warnings and processing errors retain their original colors.
 Podcasts opens on subscriptions. Import activity lives in Devices. Show and episode covers use publisher artwork when available.
 
 The magnifying glass opens directory browsing. An episode’s Cut ads action opens its own settings sheet.
+
+Per-episode Download queues an owner transfer without starting playback or requiring the phone to stay on the screen. Ready status names the owner. The Cutting room link opens the merged processing queue. Download and cut actions occupy their own row for narrow phone screens.

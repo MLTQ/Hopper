@@ -19,7 +19,7 @@ const library = { device, peers: [], items, queue: { items: items.slice(0, 3).ma
   hosts: [{ device, desktop: true, online: true }], jobs: [], episodes: [],
   shows: ['The Quiet Hours', 'Good Things Take Time', 'Outside, Together'].map((title, i) => ({ id: `show-${i}`, title, author: 'Hopper studio', owner: device })),
 } };
-let failRefresh = false, queued, directorySubscription;
+let failRefresh = false, queued, directorySubscription, podcastAction;
 const server = createServer(async (request, response) => {
   const path = new URL(request.url, 'http://localhost').pathname;
   if (path === '/favicon.ico') { response.writeHead(204); response.end(); return; }
@@ -35,6 +35,10 @@ const server = createServer(async (request, response) => {
     if (path === '/api/add-podcasts') {
       let body=''; for await (const chunk of request) body+=chunk;
       directorySubscription=JSON.parse(body); response.end(JSON.stringify({delivery_ids:['test'],warnings:[]})); return;
+    }
+    if (path === '/api/podcasts/command') {
+      let body=''; for await (const chunk of request) body+=chunk;
+      podcastAction=JSON.parse(body); response.end(JSON.stringify({job_ids:[]})); return;
     }
     if (path === '/api/queue' && request.method === 'POST') {
       let body = ''; for await (const chunk of request) body += chunk; queued = JSON.parse(body);
@@ -126,6 +130,22 @@ try {
   assert.equal(directorySubscription.owner_id, device.id);
   await evaluate("document.getElementById('dialog').close()");
   assert.equal(await evaluate("new Set([...document.querySelectorAll('.podcast-card')].map(e=>e.dataset.glassInk)).size"), 1);
+  library.podcasts.episodes = [{id:'episode-download',show_id:'show-0',title:'The next adventure',published:1,duration:1800}];
+  library.podcasts.jobs = [{id:'cut-check',show_id:'show-0',episode_id:'episode-download',state:'waiting_for_agent',message:'Waiting for Hermes',created_at:1,removed_seconds:0}];
+  await evaluate("document.querySelector('[data-podcast-show]').click()");
+  await waitFor(() => evaluate("!!document.querySelector('[data-episode-download]')"), 'explicit download action');
+  await evaluate("document.querySelector('[data-episode-download]').click()");
+  await waitFor(() => podcastAction?.action==='queue_download', 'durable owner download');
+  assert.equal(podcastAction.owner_id,device.id);
+  assert.equal(podcastAction.episode_id,'episode-download');
+  await evaluate("document.querySelector('[data-podcast-back]').click()");
+  await waitFor(() => evaluate("!!document.querySelector('[data-cutting-room]')"), 'cutting room navigation');
+  await evaluate("document.querySelector('[data-cutting-room]').click()");
+  await waitFor(() => evaluate("document.getElementById('collection').textContent.includes('Waiting for Hermes')"), 'real cut job state');
+  await evaluate("document.querySelector('[data-job-cancel]').click()");
+  await waitFor(() => podcastAction?.action==='cancel', 'cancel cut');
+  await evaluate("document.querySelector('[data-podcast-back]').click()");
+  await waitFor(() => evaluate("document.querySelectorAll('.podcast-card').length === 3"), 'return to shows');
   // Dialogs are deliberately excluded from SVG refraction.
   await evaluate("document.getElementById('appearance').click()");
   assert.equal(await evaluate("document.querySelector('dialog').style.getPropertyValue('--glass-lens')"), '');

@@ -190,3 +190,11 @@ accessibility walkthroughs are tracked in hopper-tqd; existing platform/device r
 - Installed the current desktop build and verified its running window. Configured the installed Hermes CLI as the owner’s external agent. There were zero existing jobs queued when it was enabled.
 - An isolated Hopper library on the same machine subscribed to a temporary 20.184-second spoken episode with a fictional host-read sponsor between two stretches of roleplay. Hopper downloaded the source, launched the actual Hermes agent with the shipped skill and rendered a ready edited file. Hermes returned original-time decisions with spoken evidence for all three stretches. Its ad spanned 4.36–15.37 seconds. Hopper removed 11.01 seconds. FFprobe measured the copied-back AAC edit at 9.17375 seconds and FFmpeg decoded it successfully. The full source and its separate edited variant remained available.
 - The stdio bridge integration test returned an actual WAV clip ending at the source boundary and rejected an oversized request. Skill validation, all 23 core tests, desktop browser checks, workspace Clippy and the macOS bundle build passed. Timing and detection on full-length unscripted shows remain a separate evaluation.
+
+## Subscription downloads and Cutting room — November 13, 2026
+
+A paired listener subscribed to a feed that listed its older episode first. The owner queued only the latest publication, resumed its transfer after an interrupted restart, and completed a manual download while an external-agent job was waiting. Duplicate requests retained a single download record and reused available media. Owner download state reached the paired catalogue.
+
+The native and desktop interfaces expose owner download actions and a Cutting room containing actual processing status, cancellation and retry. iOS decodes download state optionally to retain compatibility with earlier desktop snapshots.
+
+All 24 core tests, the desktop browser interaction checks, workspace Clippy, both embedded iOS targets and the signed iPhone build passed. The browser check clicked Download, verified its owner-directed queue command, then opened Cutting room and cancelled a waiting fixture job. Windows execution was not checked.

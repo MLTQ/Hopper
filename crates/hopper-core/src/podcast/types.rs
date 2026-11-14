@@ -135,6 +135,8 @@ pub struct Catalogue {
     pub shows: Vec<Show>,
     pub episodes: Vec<Episode>,
     pub jobs: Vec<Job>,
+    #[serde(default)]
+    pub downloads: Vec<super::downloads::Download>,
     pub agent_available: bool,
     pub desktop: bool,
     #[serde(default)]
@@ -165,6 +167,9 @@ pub enum Command {
         show_id: String,
     },
     Download {
+        episode_id: String,
+    },
+    QueueDownload {
         episode_id: String,
     },
     CutEpisode {

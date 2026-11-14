@@ -25,6 +25,7 @@ a pairing QR code. Linux media playback and Windows runtime checks remain open.
 - Extract titles, creators, duration and M4B chapters when desktop ffprobe is available.
 - Browse Apple Podcasts (US) and Podcast Index by category or search. Subscribe to a result on your chosen desktop, or import Apple Podcasts links, RSS feeds and Castamatic OPML lists. Followed shows sort by latest episode publication.
 - For Podcast Index, select the owning desktop under **Podcasts → Browse podcasts → Podcast Index** and enter the developer key and secret on that desktop. Paired phones use that connection.
+- Subscribing downloads the latest episode on its owner. Use each episode’s Download button to prepare more, and follow ad edits in the Cutting room.
 - Choose a Home desktop; laptop/phone additions wait for delivery there, with visible receipts.
 - Browse/control desktop-owned podcasts from paired desktop/iOS apps.
 - Try **Cut ads** on a specific episode, or set per-show ad cuts, banter/promos, fades, confidence and automatic preparation of future episodes.

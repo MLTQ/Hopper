@@ -24,6 +24,13 @@ impl Node {
                 .filter(|e| ids.contains(&e.show_id))
                 .collect(),
             jobs,
+            downloads: self
+                .0
+                .store
+                .all::<super::downloads::Download>("episode_download")?
+                .into_iter()
+                .filter(|d| ids.contains(&d.show_id))
+                .collect(),
             agent_available: self.agent_available(),
             desktop: !cfg!(target_os = "ios"),
             hosts: vec![],
@@ -83,6 +90,17 @@ impl Node {
                     });
                 show.followed = true;
                 self.refresh_show(show).await?;
+                if !cfg!(target_os = "ios")
+                    && let Some(latest) = self
+                        .0
+                        .store
+                        .all::<Episode>("podcast_episode")?
+                        .into_iter()
+                        .filter(|e| e.show_id == id)
+                        .max_by_key(|e| (e.published, e.id.clone()))
+                {
+                    self.queue_episode_download(&latest.id)?;
+                }
                 Ok(CommandResult {
                     show_id: Some(id),
                     ..Default::default()
@@ -125,6 +143,10 @@ impl Node {
                     media_id: episode.cleaned_id.or(episode.original_id),
                     ..Default::default()
                 })
+            }
+            Command::QueueDownload { episode_id } => {
+                self.queue_episode_download(&episode_id)?;
+                Ok(CommandResult::default())
             }
             Command::CutEpisode {
                 episode_id,

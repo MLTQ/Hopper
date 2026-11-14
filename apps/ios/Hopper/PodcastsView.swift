@@ -6,6 +6,9 @@ struct PodcastsView: View {
     var body: some View {
         NavigationStack {
             List {
+                NavigationLink { CuttingRoomView() } label: {
+                    Label("Cutting room", systemImage: "scissors")
+                }.listRowBackground(HopperTheme.background)
                 if client.podcasts.shows.isEmpty {
                     VStack(spacing: 18) {
                         Image(systemName: "dot.radiowaves.left.and.right").font(.largeTitle)
@@ -72,13 +75,30 @@ struct PodcastShowView: View {
                                 else if job.state == "failed" || job.state == "cancelled" { Button("Retry") { action(PodcastCommand(ownerId: show.owner.id, action: "retry", jobId: job.id)) }.font(.caption) }
                             }
                             ForEach(episode.metadataWarnings, id: \.self) { Text($0).font(.caption).foregroundColor(.orange) }
+                            let download = client.podcasts.download(for: episode)
+                            if let download, episode.originalId == nil {
+                                Text(download.message).font(.caption).foregroundColor(download.state == "failed" ? .orange : HopperTheme.muted)
+                            } else if episode.originalId != nil {
+                                Text("Downloaded on \(show.owner.name)").font(.caption).foregroundColor(HopperTheme.muted)
+                            }
                             HStack {
                                 Button(episode.playableId == nil ? "Get & play" : "Play") { play(episode, show: show) }.buttonStyle(.borderedProminent)
                                 Button("Queue") { play(episode, show: show, enqueue: true) }.buttonStyle(.bordered)
                                 if episode.cleanedId != nil && episode.cleanedId != episode.originalId { Button("Original") { play(episode, show: show, original: true) }.font(.caption) }
-                                if client.podcasts.job(for: episode)?.active != true { Button("Cut ads") { cutEpisode = episode }.buttonStyle(.borderless) }
+
                                 if preparing == episode.id { ProgressView() }
                             }.disabled(preparing != nil)
+                            HStack {
+                                Button {
+                                    action(PodcastCommand(ownerId: show.owner.id, action: "queue_download", episodeId: episode.id))
+                                } label: {
+                                    Label(episode.originalId != nil ? "Downloaded" : download?.active == true ? "Downloading" : "Download", systemImage: episode.originalId != nil ? "checkmark.circle" : "arrow.down.circle")
+                                }.buttonStyle(.bordered).disabled(episode.originalId != nil || download?.active == true || client.working)
+                                    .accessibilityLabel("Download to \(show.owner.name)")
+                                Button { cutEpisode = episode } label: {
+                                    Label("Cut ads", systemImage: "scissors")
+                                }.buttonStyle(.bordered).disabled(client.podcasts.job(for: episode)?.active == true)
+                            }
                         }.padding(.vertical, 8).listRowBackground(HopperTheme.background)
                     }
                 }.listStyle(.plain).scrollContentBackground(.hidden).hopperScene()

@@ -15,3 +15,5 @@ descriptions. Full processing records stay on the owner; playable Media still in
 Episode artwork is optional. Compact catalogues keep episode covers and chapter document links.
 
 The merged show sort uses each show’s maximum positive publication time. Undated shows follow dated shows. Equal dates sort by title and owner-scoped ID. A CutEpisode command carries one episode and per-job options.
+
+The optional downloads catalogue field is backward compatible with saved snapshots. QueueDownload schedules a durable transfer and returns promptly. Existing Download continues to wait for a playable ID.

@@ -18,3 +18,5 @@ Publishing a downloaded episode reuses an existing identical managed file so ove
 External chapter parsing retains image URLs and silent markers on playable original media.
 
 CutEpisode queues a single episode of a followed show on its owner and leaves saved show preferences and automatic processing intact.
+
+Subscribe schedules the episode with the latest publication time on its owner after refreshing metadata. Repeated requests reuse existing originals. QueueDownload uses the same durable worker as subscription. Show order preferences do not change which episode counts as latest.

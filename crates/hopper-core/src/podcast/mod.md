@@ -12,3 +12,5 @@ intake parses OPML and resolves supported share links for the Home delivery rece
 The chapter reader is shared by owner preparation and on-demand original chapter recovery.
 
 The directory module normalizes Apple and Podcast Index listings for both shells.
+
+downloads schedules original episode transfers independently of ad analysis.

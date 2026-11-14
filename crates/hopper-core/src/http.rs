@@ -188,6 +188,15 @@ pub(crate) async fn serve(node: Node) -> Result<u16> {
             }),
         )
         .route(
+            "/cutting-room.js",
+            get(|| async {
+                asset(
+                    "text/javascript; charset=utf-8",
+                    include_str!("../../../ui/cutting-room.js"),
+                )
+            }),
+        )
+        .route(
             "/podcasts.js",
             get(|| async {
                 asset(

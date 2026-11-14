@@ -23,3 +23,5 @@ Fixture IDs deliberately vary their leading bytes so every artwork palette is re
 An additional 4,800-item fixture drills into a plotline and season and verifies bounded episode rendering, starting at the selected episode, the saved queue, and advancing within the season.
 
 The discovery fixture opens both providers, filters a category with a search term, and verifies that subscribing queues the result on the selected desktop.
+
+The podcast fixture also verifies that Download targets the owner with queue_download and Cutting room shows a waiting job whose cancel button sends the expected command.

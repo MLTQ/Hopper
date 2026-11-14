@@ -31,3 +31,5 @@ The native folder-copy endpoint invokes the shell picker. Original chapter looku
 The authenticated native-play route resolves a media ID to an available local file or scoped stream. Playback-download returns the verified local path.
 
 POST /api/podcasts/directory reads an Apple chart/search or routes Podcast Index to a selected desktop. POST /api/podcasts/directory/keys accepts a new local desktop key pair and returns only an acknowledgment.
+
+The desktop Cutting room module renders persisted job state through existing podcast commands.

@@ -100,6 +100,7 @@ struct Inner {
     podcast_downloads: tokio::sync::Mutex<()>,
     index_categories: tokio::sync::OnceCell<Vec<podcast::directory::Category>>,
     podcast_wake: tokio::sync::Notify,
+    episode_download_wake: tokio::sync::Notify,
     delivery_wake: tokio::sync::Notify,
     deliveries: tokio::sync::Mutex<()>,
     _lock: File,
@@ -186,6 +187,7 @@ impl Node {
             podcast_downloads: Default::default(),
             index_categories: Default::default(),
             podcast_wake: Default::default(),
+            episode_download_wake: Default::default(),
             delivery_wake: Default::default(),
             deliveries: Default::default(),
             _lock: lock,
@@ -194,6 +196,7 @@ impl Node {
         node.start_accepting();
         node.start_folder_scans();
         node.start_podcasts();
+        node.start_episode_downloads();
         node.start_deliveries();
         let port = http::serve(node.clone()).await?;
         let hello = Hello {
@@ -283,6 +286,7 @@ impl Node {
                 );
                 podcasts.episodes.extend(snapshot.podcasts.episodes);
                 podcasts.jobs.extend(snapshot.podcasts.jobs);
+                podcasts.downloads.extend(snapshot.podcasts.downloads);
                 for media in snapshot.items {
                     let source = Source {
                         device_id: peer.device.id.clone(),

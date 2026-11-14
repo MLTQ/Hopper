@@ -3,6 +3,7 @@ pub mod agent;
 mod analyzer;
 pub(crate) mod chapters;
 pub mod directory;
+pub mod downloads;
 pub mod feed;
 pub(crate) mod fetch;
 pub mod intake;

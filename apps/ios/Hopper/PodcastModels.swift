@@ -29,8 +29,17 @@ struct PodcastHost: Decodable, Identifiable {
     let device: Device; let online: Bool; let desktop: Bool; let agentAvailable: Bool
     var id: String { device.id }
 }
+struct PodcastDownload: Decodable {
+    let episodeId: String
+    let showId: String
+    let state: String
+    let message: String
+    var active: Bool { state == "queued" || state == "downloading" }
+}
 struct PodcastCatalogue: Decodable {
     let shows: [PodcastShow]; let episodes: [PodcastEpisode]; let jobs: [PodcastJob]; let hosts: [PodcastHost]
+    var downloads: [PodcastDownload]? = nil
+    func download(for episode: PodcastEpisode) -> PodcastDownload? { downloads?.first { $0.episodeId == episode.id } }
     static let empty = PodcastCatalogue(shows: [], episodes: [], jobs: [], hosts: [])
     func episodes(for show: PodcastShow) -> [PodcastEpisode] {
         episodes.filter { $0.showId == show.id }.sorted { show.newestFirst ? $0.published > $1.published : $0.published < $1.published }

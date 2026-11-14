@@ -63,7 +63,7 @@ struct CutAdsView: View {
                             }
                             catch { client.error = error.localizedDescription }
                         }
-                    } label: { if client.working { ProgressView() } else { Text(episode != nil ? "Cut this episode" : "Cut ads in \(min(count, episodes.count)) episode(s)") } }.disabled(client.working || episodes.isEmpty)
+                    } label: { if client.working { ProgressView() } else { Text(episode != nil ? "Send to cutting room" : "Send \(min(count, episodes.count)) to cutting room") } }.disabled(client.working || episodes.isEmpty)
                 }
             }.navigationTitle("Cut ads").toolbar { Button("Cancel") { dismiss() } }.onAppear { options = show.cutOptions }
         }
